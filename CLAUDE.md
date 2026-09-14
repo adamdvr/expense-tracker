@@ -195,6 +195,34 @@ Turborepo кэширует результаты задач. Важные дет�
 - Кэш хранится в `.turbo/` (в gitignore)
 - Env файлы отслеживаются как `globalDependencies`
 
+## Git: ветки (GitHub Flow)
+
+Работа ведётся по [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow):
+
+- `master` — единственная долгоживущая ветка, всегда в рабочем состоянии (typecheck, lint и build проходят). Напрямую в `master` не коммитим
+- Любая работа (фича, фикс, рефакторинг, документация) — в отдельной короткоживущей ветке, созданной от актуального `master`
+- Одна ветка — одна фича/задача. Ветка сливается в `master` через Pull Request и после слияния удаляется
+
+**Именование веток**: `<type>/<scope>-<краткое-описание>` — латиницей, kebab-case, `type` из того же списка, что и в коммитах:
+
+- `feat/frontend-home-screen` — новая фича
+- `fix/auth-token-refresh` — исправление бага
+- `refactor/transactions-service`, `docs/readme-setup`, `chore/eslint-config`
+
+**Workflow:**
+```bash
+git switch master && git pull          # актуализировать master
+git switch -c feat/<scope>-<описание>  # создать ветку под задачу
+# ... коммиты по Conventional Commits ...
+git push -u origin feat/<scope>-<описание>
+# открыть PR в master → ревью → merge → удалить ветку
+```
+
+Правила:
+- Перед созданием PR ветка актуализируется относительно `master` (`git rebase master` или merge), конфликты решаются в ветке
+- Заголовок PR оформляется так же, как коммит по Conventional Commits
+- В PR не смешиваются несвязанные изменения — для посторонних правок заводится отдельная ветка
+
 ## Git: соглашение о коммитах
 
 Коммиты оформляются по [Conventional Commits](https://www.conventionalcommits.org/):
