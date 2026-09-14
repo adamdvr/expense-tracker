@@ -205,7 +205,7 @@ Turborepo кэширует результаты задач. Важные дет�
 
 **Именование веток**: `<type>/<scope>-<краткое-описание>` — латиницей, kebab-case, `type` из того же списка, что и в коммитах:
 
-- `feat/frontend-home-screen` — новая фича
+- `feat/frontend-home-page` — новая фича
 - `fix/auth-token-refresh` — исправление бага
 - `refactor/transactions-service`, `docs/readme-setup`, `chore/eslint-config`
 
