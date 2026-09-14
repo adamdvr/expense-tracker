@@ -64,6 +64,7 @@ export class CategoriesController {
   @ApiResponse({ status: 204, description: 'Категория удалена' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 404, description: 'Категория не найдена' })
+  @ApiResponse({ status: 409, description: 'В категории есть транзакции' })
   async remove(@CurrentUser() user: User, @Param('id') id: string): Promise<void> {
     await this.categoriesService.remove(id, user.id)
   }

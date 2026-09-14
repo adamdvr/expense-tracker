@@ -6,9 +6,17 @@ import { PrismaModule } from './prisma/prisma.module'
 import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
 import { CategoriesModule } from './categories/categories.module'
+import { TransactionsModule } from './transactions/transactions.module'
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UserModule, AuthModule, CategoriesModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    UserModule,
+    AuthModule,
+    CategoriesModule,
+    TransactionsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -27,6 +27,11 @@ export class CategoriesRepository {
     return this.prisma.category.update({ where: { id }, data })
   }
 
+  async hasTransactions(id: string): Promise<boolean> {
+    const count = await this.prisma.transaction.count({ where: { categoryId: id } })
+    return count > 0
+  }
+
   delete(id: string): Promise<Category> {
     return this.prisma.category.delete({ where: { id } })
   }

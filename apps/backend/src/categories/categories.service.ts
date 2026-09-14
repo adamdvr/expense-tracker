@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { Category } from '@prisma/client'
 import { CategoriesRepository } from './categories.repository'
 import { CreateCategoryDto } from './dto/create-category.dto'
@@ -23,6 +23,9 @@ export class CategoriesService {
 
   async remove(id: string, userId: string): Promise<Category> {
     await this.findOwnedOrThrow(id, userId)
+    if (await this.categoriesRepository.hasTransactions(id)) {
+      throw new ConflictException('Нельзя удалить категорию, в которой есть транзакции')
+    }
     return this.categoriesRepository.delete(id)
   }
 
