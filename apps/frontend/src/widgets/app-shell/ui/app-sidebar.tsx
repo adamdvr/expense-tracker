@@ -56,7 +56,7 @@ export function AppSidebar({ user }: { user: User }) {
         <SidebarGroup>
           <SidebarGroupLabel>Меню</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {NAVIGATION_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
