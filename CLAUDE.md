@@ -22,6 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Фреймворк**: Next.js 15 с App Router
 - **Архитектура**: Feature-Sliced Design (FSD) — см. раздел «Frontend: Feature-Sliced Design» ниже
 - **UI-кит**: shadcn/ui (примитивы Base UI, пресет Nova) поверх Tailwind CSS v4
+- **Загрузка данных**: TanStack Query (`@tanstack/react-query`); формы — react-hook-form + zod
 - **Стилизация**: CSS-переменные темы shadcn, смэппленные на палитру проекта в `globals.css`. Тема одна — тёмная, без переключателя (класс `dark` статически задан в `app/layout.tsx`)
 - **Порт**: 3000 (по умолчанию)
 
@@ -29,6 +30,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `src/app/` — роутинг Next.js (`page.tsx`/`layout.tsx`); одновременно выполняет роль FSD-слоя `app` (глобальные провайдеры, стили). Остальные FSD-слои — `src/widgets/`, `src/features/`, `src/entities/`, `src/shared/`
 - shadcn-компоненты ставятся в `src/shared/ui` (алиасы настроены в `components.json`, не дефолтный `src/components/ui`)
 - API URL конфигурируется через `NEXT_PUBLIC_API_URL` env переменную
+- `app/providers.tsx` — `QueryClientProvider`, `TooltipProvider` и регистрация источника токена: `setAuthTokenGetter(() => getSession()?.accessToken)`. `shared/api` не импортирует `entities/session`, поэтому `apiClient` получает токен через этот getter и сам подставляет `Authorization: Bearer`
+- Авторизованные страницы живут в route group `app/(dashboard)/` — её `layout.tsx` оборачивает их в `widgets/app-shell` (боковое меню, профиль, шапка; без сессии — редирект на `/login`). Новые разделы приложения добавляются туда же, пункт меню — в `widgets/app-shell/config/navigation.ts`
+- Сессия хранится в `localStorage` (`entities/session`); в компонентах читается хуком `useSession()` → `{ status: 'loading' | 'authenticated' | 'unauthenticated', session }`
 
 ### Общее
 - **TypeScript**: Строгий режим во всех проектах
@@ -171,6 +175,7 @@ src/
 Правила:
 - **Импорты только «сверху вниз»**: `app` → `widgets` → `features` → `entities` → `shared`. Слой не импортирует из слоя выше себя. Кросс-импорт между слайсами одного уровня (напр. `features/auth/login` → `features/auth/register`) не допускается — общая логика уходит на слой ниже (в примере с auth — в `entities/session`).
 - **Публичный API через `index.ts`**: импортировать можно только из корня слайса (`@/entities/session`), а не из его внутренних файлов (`@/entities/session/model/storage`).
+- **Запросы к API**: функции запросов, фабрика ключей кэша (`transactionKeys`, `categoryKeys`) и query-хуки (`useTransactions`, `useCategories`) лежат в `entities/<сущность>/api`; мутации пользовательских сценариев (`useCreateTransaction`) — в `features/<домен>/<сценарий>/api` и после успеха инвалидируют кэш по корневому ключу сущности.
 
 ### UI-кит (shadcn/ui)
 
