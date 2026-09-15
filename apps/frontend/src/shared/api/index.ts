@@ -1,2 +1,2 @@
-export { apiClient, setAuthTokenGetter } from './client'
+export { apiClient, setAuthTokenGetter, setUnauthorizedHandler } from './client'
 export { ApiError } from './api-error'

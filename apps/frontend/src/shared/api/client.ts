@@ -15,6 +15,18 @@ export function setAuthTokenGetter(getter: AuthTokenGetter): void {
   getAuthToken = getter
 }
 
+type UnauthorizedHandler = () => void
+
+let onUnauthorized: UnauthorizedHandler = () => {}
+
+/**
+ * Регистрирует реакцию на 401 для запросов с токеном (истёкший или отозванный токен).
+ * Запросы без токена (напр. неверный пароль при логине) обработчик не вызывают.
+ */
+export function setUnauthorizedHandler(handler: UnauthorizedHandler): void {
+  onUnauthorized = handler
+}
+
 function normalizeMessage(message: unknown): string[] {
   if (Array.isArray(message)) {
     return message.filter((item): item is string => typeof item === 'string')
@@ -54,6 +66,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = await parseJsonBody(response)
 
   if (!response.ok) {
+    if (response.status === 401 && token) {
+      onUnauthorized()
+    }
     const errorBody = data as { message?: unknown } | null
     throw new ApiError(response.status, normalizeMessage(errorBody?.message))
   }
