@@ -6,5 +6,6 @@ export type {
   CreateTransactionPayload,
 } from './model/types'
 export { transactionKeys, fetchTransactions, createTransaction } from './api/transaction-api'
-export { useTransactions, TRANSACTIONS_PAGE_SIZE } from './api/use-transactions'
+export { useTransactions } from './api/use-transactions'
+export { TRANSACTIONS_PAGE_SIZE } from './config/pagination'
 export { TransactionRow } from './ui/transaction-row'

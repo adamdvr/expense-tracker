@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { TRANSACTIONS_PAGE_SIZE } from '../config/pagination'
 import { fetchTransactions, transactionKeys } from './transaction-api'
-
-export const TRANSACTIONS_PAGE_SIZE = 10
 
 /** Страница транзакций текущего пользователя, от новых к старым. */
 export function useTransactions(page: number, limit = TRANSACTIONS_PAGE_SIZE) {
