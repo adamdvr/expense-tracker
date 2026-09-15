@@ -4,9 +4,15 @@ import { CreateTransactionDto } from './dto/create-transaction.dto'
 import { FindTransactionsQueryDto } from './dto/find-transactions-query.dto'
 import { SummaryQueryDto } from './dto/summary-query.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
-import { PaginatedTransactionsEntity } from './entities/paginated-transactions.entity'
 import { CategorySummaryEntity, TransactionSummaryEntity } from './entities/transaction-summary.entity'
 import { TransactionsRepository } from './transactions.repository'
+
+export interface TransactionsPage {
+  items: Transaction[]
+  total: number
+  page: number
+  limit: number
+}
 
 @Injectable()
 export class TransactionsService {
@@ -17,12 +23,9 @@ export class TransactionsService {
     return this.transactionsRepository.create(userId, dto)
   }
 
-  async findAll(
-    userId: string,
-    query: FindTransactionsQueryDto
-  ): Promise<PaginatedTransactionsEntity> {
+  async findAll(userId: string, query: FindTransactionsQueryDto): Promise<TransactionsPage> {
     const { items, total } = await this.transactionsRepository.findAllByUser(userId, query)
-    return new PaginatedTransactionsEntity({ items, total, page: query.page, limit: query.limit })
+    return { items, total, page: query.page, limit: query.limit }
   }
 
   findOne(id: string, userId: string): Promise<Transaction> {

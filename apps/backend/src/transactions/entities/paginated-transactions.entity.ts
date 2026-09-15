@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Transaction } from '@prisma/client'
+import type { TransactionsPage } from '../transactions.service'
 import { TransactionEntity } from './transaction.entity'
 
 export class PaginatedTransactionsEntity {
@@ -18,17 +18,7 @@ export class PaginatedTransactionsEntity {
   @ApiProperty({ example: 5 })
   totalPages: number
 
-  constructor({
-    items,
-    total,
-    page,
-    limit,
-  }: {
-    items: Transaction[]
-    total: number
-    page: number
-    limit: number
-  }) {
+  constructor({ items, total, page, limit }: TransactionsPage) {
     this.items = items.map((transaction) => new TransactionEntity(transaction))
     this.total = total
     this.page = page

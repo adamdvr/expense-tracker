@@ -51,11 +51,12 @@ export class TransactionsController {
   })
   @ApiResponse({ status: 400, description: 'Некорректные параметры фильтра или пагинации' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
-  findAll(
+  async findAll(
     @CurrentUser() user: User,
     @Query() query: FindTransactionsQueryDto
   ): Promise<PaginatedTransactionsEntity> {
-    return this.transactionsService.findAll(user.id, query)
+    const page = await this.transactionsService.findAll(user.id, query)
+    return new PaginatedTransactionsEntity(page)
   }
 
   // Объявлен до GET :id, иначе "summary" будет пойман как id
