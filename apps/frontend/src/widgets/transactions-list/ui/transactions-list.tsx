@@ -31,7 +31,20 @@ export function TransactionsList() {
   )
 
   const data = transactions.data
-  const totalPages = data?.totalPages ?? 0
+
+  // Последнее известное число страниц: если следующая страница не загрузилась, data пропадает,
+  // а навигация должна остаться, чтобы можно было вернуться назад.
+  const [totalPages, setTotalPages] = useState(0)
+  if (data && data.totalPages !== totalPages) {
+    setTotalPages(data.totalPages)
+  }
+
+  // Транзакций стало меньше (напр. удалены с другого устройства) и текущей страницы больше нет —
+  // переходим на последнюю существующую.
+  if (data && !transactions.isPlaceholderData && page > Math.max(data.totalPages, 1)) {
+    setPage(Math.max(data.totalPages, 1))
+  }
+
   // Ждём и категории, чтобы строки не мигали «Без категории» до их загрузки.
   const isLoading = transactions.isPending || categories.isPending
 
@@ -58,7 +71,7 @@ export function TransactionsList() {
               Повторить
             </Button>
           </div>
-        ) : !data || data.items.length === 0 ? (
+        ) : !data || data.total === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
             Транзакций пока нет — добавьте первую
           </p>
