@@ -13,5 +13,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
 ]
 
 export function isNavigationItemActive(item: NavigationItem, pathname: string): boolean {
-  return item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+  if (pathname === item.href) {
+    return true
+  }
+  // Вложенные страницы раздела (`/transactions/123`), но не соседние пути (`/transactions-archive`).
+  return item.href !== '/' && pathname.startsWith(`${item.href}/`)
 }
