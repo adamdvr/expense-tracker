@@ -28,9 +28,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Архитектурные детали:**
 - `src/app/` — роутинг Next.js (`page.tsx`/`layout.tsx`); одновременно выполняет роль FSD-слоя `app` (глобальные провайдеры, стили). Остальные FSD-слои — `src/widgets/`, `src/features/`, `src/entities/`, `src/shared/`
-- shadcn-компоненты ставятся в `src/shared/ui` (алиасы настроены в `components.json`, не дефолтный `src/components/ui`)
+- shadcn-компоненты ставятся в `src/shared/ui`, их хуки (напр. `use-mobile`) — в `src/shared/hooks` (алиасы настроены в `components.json`, не дефолтный `src/components/ui`)
 - API URL конфигурируется через `NEXT_PUBLIC_API_URL` env переменную
-- `app/providers.tsx` — `QueryClientProvider`, `TooltipProvider` и регистрация источника токена: `setAuthTokenGetter(() => getSession()?.accessToken)`. `shared/api` не импортирует `entities/session`, поэтому `apiClient` получает токен через этот getter и сам подставляет `Authorization: Bearer`
+- `app/providers.tsx` — `QueryClientProvider`, `TooltipProvider` и регистрация источника токена: `setAuthTokenGetter(() => getSession()?.accessToken)`. `shared/api` не импортирует `entities/session`, поэтому `apiClient` получает токен через этот getter и сам подставляет `Authorization: Bearer`. Там же `setUnauthorizedHandler(() => clearSession())` — 401 на запросе с токеном сбрасывает сессию (`AppShell` уводит на `/login`), и сброс кэша TanStack Query при смене пользователя: ключи кэша не содержат id пользователя. Запросы с ошибкой 4xx не повторяются
 - Авторизованные страницы живут в route group `app/(dashboard)/` — её `layout.tsx` оборачивает их в `widgets/app-shell` (боковое меню, профиль, шапка; без сессии — редирект на `/login`). Новые разделы приложения добавляются туда же, пункт меню — в `widgets/app-shell/config/navigation.ts`
 - Сессия хранится в `localStorage` (`entities/session`); в компонентах читается хуком `useSession()` → `{ status: 'loading' | 'authenticated' | 'unauthenticated', session }`
 
@@ -169,7 +169,7 @@ src/
   widgets/      # Композитные блоки UI (напр. auth-layout — обёртка для страниц логина/регистрации)
   features/     # Пользовательские сценарии с логикой (напр. auth/login, auth/register)
   entities/     # Бизнес-сущности (напр. user, session)
-  shared/       # Переиспользуемое: ui-кит (shadcn), api-клиент, config, lib
+  shared/       # Переиспользуемое: ui-кит (shadcn), api-клиент, config, lib, hooks
 ```
 
 Правила:
