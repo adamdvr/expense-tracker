@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -9,7 +9,6 @@ import type { TransactionType } from '@/entities/transaction'
 import { ApiError } from '@/shared/api'
 import { todayInputValue } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
-import { DialogClose, DialogFooter } from '@/shared/ui/dialog'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
@@ -28,9 +27,21 @@ const TRANSACTION_TYPES: { value: TransactionType; label: string }[] = [
 
 interface CreateTransactionFormProps {
   onSuccess?: () => void
+  /** Если передан — рядом с «Добавить» появляется кнопка «Отмена». */
+  onCancel?: () => void
+  /** Обёртка для кнопок формы, напр. `DialogFooter`. Форма не зависит от места, где её показывают. */
+  renderFooter?: (actions: ReactNode) => ReactNode
 }
 
-export function CreateTransactionForm({ onSuccess }: CreateTransactionFormProps) {
+function defaultRenderFooter(actions: ReactNode) {
+  return <div className="mt-6 flex justify-end gap-2">{actions}</div>
+}
+
+export function CreateTransactionForm({
+  onSuccess,
+  onCancel,
+  renderFooter = defaultRenderFooter,
+}: CreateTransactionFormProps) {
   const [rootError, setRootError] = useState<string | null>(null)
   const categories = useCategories()
   const createTransaction = useCreateTransaction()
@@ -190,12 +201,18 @@ export function CreateTransactionForm({ onSuccess }: CreateTransactionFormProps)
         )}
       </FieldGroup>
 
-      <DialogFooter className="mt-6">
-        <DialogClose render={<Button type="button" variant="outline" />}>Отмена</DialogClose>
-        <Button type="submit" disabled={createTransaction.isPending || hasNoCategories}>
-          {createTransaction.isPending ? 'Сохраняем…' : 'Добавить'}
-        </Button>
-      </DialogFooter>
+      {renderFooter(
+        <>
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Отмена
+            </Button>
+          )}
+          <Button type="submit" disabled={createTransaction.isPending || hasNoCategories}>
+            {createTransaction.isPending ? 'Сохраняем…' : 'Добавить'}
+          </Button>
+        </>
+      )}
     </form>
   )
 }

@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -40,7 +41,11 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
           <DialogDescription>Запишите доход или расход</DialogDescription>
         </DialogHeader>
         {/* Popup размонтируется при закрытии — форма каждый раз открывается чистой. */}
-        <CreateTransactionForm onSuccess={handleSuccess} />
+        <CreateTransactionForm
+          onSuccess={handleSuccess}
+          onCancel={() => setOpen(false)}
+          renderFooter={(actions) => <DialogFooter className="mt-6">{actions}</DialogFooter>}
+        />
       </DialogContent>
     </Dialog>
   )
