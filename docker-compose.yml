@@ -1,3 +1,7 @@
+# Имя проекта зафиксировано: иначе Compose берёт его из имени папки,
+# и при её переименовании создаёт новый пустой том postgres_data и конфликтует по container_name.
+name: tracker
+
 services:
   postgres:
     image: postgres:16-alpine

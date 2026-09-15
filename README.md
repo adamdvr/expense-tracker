@@ -5,7 +5,7 @@
 ## Структура проекта
 
 ```
-tracker/
+expense-tracker/
 ├── apps/
 │   ├── frontend/          # Next.js приложение
 │   └── backend/           # Nest.js API
