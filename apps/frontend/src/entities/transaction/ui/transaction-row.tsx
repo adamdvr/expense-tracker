@@ -1,3 +1,4 @@
+import { getReadableTextColor } from '@/shared/lib/color'
 import { cn } from '@/shared/lib/utils'
 import { formatDate, formatMoney } from '@/shared/lib/format'
 import type { Transaction } from '../model/types'
@@ -22,8 +23,12 @@ export function TransactionRow({ transaction, category, className }: Transaction
     <div className={cn('flex items-center gap-3 py-3', className)}>
       <span
         aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-        style={{ backgroundColor: category?.color ?? 'var(--muted)' }}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-foreground"
+        style={
+          category
+            ? { backgroundColor: category.color, color: getReadableTextColor(category.color) }
+            : { backgroundColor: 'var(--muted)' }
+        }
       >
         {categoryName.charAt(0).toUpperCase()}
       </span>
@@ -39,7 +44,7 @@ export function TransactionRow({ transaction, category, className }: Transaction
         <p
           className={cn(
             'text-sm font-semibold tabular-nums',
-            isIncome ? 'text-emerald-400' : 'text-foreground'
+            isIncome ? 'text-income' : 'text-foreground'
           )}
         >
           {isIncome ? '+' : '−'}
