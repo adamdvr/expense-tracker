@@ -27,11 +27,13 @@ export class FindTransactionsQueryDto {
   @IsNotEmpty()
   categoryId?: string
 
-  @ApiPropertyOptional({ example: 1, minimum: 1, default: 1 })
+  // Огромный page переполняет skip (int64 в Prisma) — без границы 500 вместо 400.
+  @ApiPropertyOptional({ example: 1, minimum: 1, maximum: 1_000_000, default: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(1_000_000)
   page: number = 1
 
   @ApiPropertyOptional({ example: 10, minimum: 1, maximum: 100, default: 10 })
