@@ -46,6 +46,9 @@ export function TransactionsList() {
   }
 
   // Ждём и категории, чтобы строки не мигали «Без категории» до их загрузки.
+  // categories.isPending не включает состояние ошибки — его показываем отдельным баннером ниже,
+  // не блокируя список транзакций целиком (иначе категории.isError маскировался бы под isLoading=false
+  // и все строки молча становились «Без категории», неотличимо от настоящих транзакций без категории).
   const isLoading = transactions.isPending || categories.isPending
 
   return (
@@ -56,12 +59,30 @@ export function TransactionsList() {
           {data ? `Всего: ${data.total}` : 'Доходы и расходы, от новых к старым'}
         </CardDescription>
         <CardAction>
-          {/* После создания возвращаемся на первую страницу — обычно новая транзакция там. */}
-          <CreateTransactionDialog onCreated={() => setPage(1)} />
+          <CreateTransactionDialog
+            onCreated={(transaction) => {
+              // На первую страницу переходим, только если новая транзакция там реально окажется
+              // (список отсортирован по дате desc): иначе, например, при добавлении задним числом,
+              // пользователя уводило на страницу 1, где транзакции не было — выглядело как будто
+              // создание не сработало.
+              const topItem = data?.items[0]
+              if (!topItem || transaction.date >= topItem.date) {
+                setPage(1)
+              }
+            }}
+          />
         </CardAction>
       </CardHeader>
 
       <CardContent>
+        {categories.isError && (
+          <div className="mb-3 flex items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <span>Не удалось загрузить категории — транзакции показаны без них</span>
+            <Button variant="ghost" size="sm" onClick={() => categories.refetch()}>
+              Повторить
+            </Button>
+          </div>
+        )}
         {isLoading ? (
           <TransactionsListSkeleton />
         ) : transactions.isError ? (
@@ -105,7 +126,7 @@ export function TransactionsList() {
               variant="outline"
               size="sm"
               onClick={() => setPage((current) => current - 1)}
-              disabled={page <= 1 || transactions.isPlaceholderData}
+              disabled={page <= 1 || transactions.isPlaceholderData || transactions.isError}
             >
               <ChevronLeft data-icon="inline-start" />
               Назад
@@ -114,7 +135,7 @@ export function TransactionsList() {
               variant="outline"
               size="sm"
               onClick={() => setPage((current) => current + 1)}
-              disabled={page >= totalPages || transactions.isPlaceholderData}
+              disabled={page >= totalPages || transactions.isPlaceholderData || transactions.isError}
             >
               Вперёд
               <ChevronRight data-icon="inline-end" />
