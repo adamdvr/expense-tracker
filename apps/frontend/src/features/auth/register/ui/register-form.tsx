@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { apiClient, ApiError } from '@/shared/api'
+import { apiClient, getApiErrorMessage } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Checkbox } from '@/shared/ui/checkbox'
@@ -42,11 +42,7 @@ export function RegisterForm() {
       router.push('/')
       router.refresh()
     } catch (error) {
-      if (error instanceof ApiError) {
-        setRootError(error.messages.join(', '))
-        return
-      }
-      setRootError('Не удалось подключиться к серверу. Попробуйте ещё раз.')
+      setRootError(getApiErrorMessage(error))
     }
   }
 
