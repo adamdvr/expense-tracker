@@ -5,14 +5,8 @@ import { FindTransactionsQueryDto } from './dto/find-transactions-query.dto'
 import { SummaryQueryDto } from './dto/summary-query.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
 import { CategorySummaryEntity, TransactionSummaryEntity } from './entities/transaction-summary.entity'
+import { TransactionsPage } from './entities/paginated-transactions.entity'
 import { TransactionsRepository } from './transactions.repository'
-
-export interface TransactionsPage {
-  items: Transaction[]
-  total: number
-  page: number
-  limit: number
-}
 
 @Injectable()
 export class TransactionsService {
