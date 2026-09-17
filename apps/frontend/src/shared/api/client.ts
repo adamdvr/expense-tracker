@@ -49,9 +49,16 @@ async function parseJsonBody(response: Response): Promise<unknown> {
   }
 }
 
+// /auth/* (логин, регистрация) не требует и не должен использовать текущий токен: иначе
+// у уже залогиненного пользователя неверный пароль на /login приведёт к 401 с токеном
+// в заголовке, и onUnauthorized() ошибочно сбросит его рабочую сессию.
+function isAuthEndpoint(path: string): boolean {
+  return path.startsWith('/auth/')
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options
-  const token = getAuthToken()
+  const token = isAuthEndpoint(path) ? null : getAuthToken()
 
   const response = await fetch(`${API_URL}${path}`, {
     ...rest,
@@ -61,6 +68,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    signal: rest.signal ?? AbortSignal.timeout(15_000),
   })
 
   const data = await parseJsonBody(response)
