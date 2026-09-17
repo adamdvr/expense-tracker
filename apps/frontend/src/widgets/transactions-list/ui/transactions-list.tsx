@@ -2,17 +2,10 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { CreateTransactionDialog } from '@/features/transaction/create'
 import { useCategories } from '@/entities/category'
-import {
-  TRANSACTIONS_PAGE_SIZE,
-  TransactionRow,
-  transactionKeys,
-  useTransactions,
-  type PaginatedTransactions,
-} from '@/entities/transaction'
+import { TRANSACTIONS_PAGE_SIZE, TransactionRow, useTransactions } from '@/entities/transaction'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import {
@@ -31,7 +24,6 @@ export function TransactionsList() {
   const [page, setPage] = useState(1)
   const transactions = useTransactions(page)
   const categories = useCategories()
-  const queryClient = useQueryClient()
 
   const categoriesById = useMemo(
     () => new Map((categories.data ?? []).map((category) => [category.id, category])),
@@ -67,22 +59,13 @@ export function TransactionsList() {
           {data ? `Всего: ${data.total}` : 'Доходы и расходы, от новых к старым'}
         </CardDescription>
         <CardAction>
-          <CreateTransactionDialog
-            onCreated={(transaction) => {
-              // На страницу 1 переходим, только если новая транзакция там реально окажется
-              // (список отсортирован по дате desc) — сравниваем именно с границей страницы 1
-              // (из кэша, если она туда уже когда-то загружалась), а не с текущей открытой
-              // страницей: иначе, например, находясь на странице 5, легко получить transaction.date
-              // «новее» верхней записи страницы 5, но саму транзакцию — не на странице 1, а на 3-й.
-              const page1 = queryClient.getQueryData<PaginatedTransactions>(
-                transactionKeys.list({ page: 1, limit: TRANSACTIONS_PAGE_SIZE })
-              )
-              const page1TopDate = page1?.items[0]?.date
-              if (!page1TopDate || transaction.date >= page1TopDate) {
-                setPage(1)
-              }
-            }}
-          />
+          {/* Безусловный переход на страницу 1: попытки угадывать, окажется ли там новая
+              транзакция, по кэшу текущей или первой страницы — хрупкие (ломаются, как только
+              появятся фильтры по дате/категории/типу, меняющие ключ кэша страницы 1) и уже
+              требовали нескольких раундов патчей. Список всё равно инвалидируется целиком
+              (useCreateTransaction), так что «не увидел на странице 1» — редкий случай
+              транзакции задним числом, а не потеря данных. */}
+          <CreateTransactionDialog onCreated={() => setPage(1)} />
         </CardAction>
       </CardHeader>
 
