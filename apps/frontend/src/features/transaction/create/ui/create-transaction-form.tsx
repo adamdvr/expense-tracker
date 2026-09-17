@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { useCategories } from '@/entities/category'
-import type { TransactionType } from '@/entities/transaction'
-import { ApiError } from '@/shared/api'
+import type { Transaction, TransactionType } from '@/entities/transaction'
+import { getApiErrorMessage } from '@/shared/api'
 import { todayInputValue } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field'
@@ -26,7 +26,7 @@ const TRANSACTION_TYPES: { value: TransactionType; label: string }[] = [
 ]
 
 interface CreateTransactionFormProps {
-  onSuccess?: () => void
+  onSuccess?: (transaction: Transaction) => void
   /** Если передан — рядом с «Добавить» появляется кнопка «Отмена». */
   onCancel?: () => void
   /** Обёртка для кнопок формы, напр. `DialogFooter`. Форма не зависит от места, где её показывают. */
@@ -45,6 +45,10 @@ export function CreateTransactionForm({
   const [rootError, setRootError] = useState<string | null>(null)
   const categories = useCategories()
   const createTransaction = useCreateTransaction()
+  // Синхронный флаг против двойного сабмита: createTransaction.isPending обновляется через
+  // useSyncExternalStore и может не успеть перерисовать (задизейблить) кнопку между двумя
+  // быстрыми кликами/Enter, а этот ref проверяется и выставляется сразу, без ожидания рендера.
+  const isSubmittingRef = useRef(false)
 
   const {
     register,
@@ -69,15 +73,17 @@ export function CreateTransactionForm({
   const hasNoCategories = categories.isSuccess && categoryItems.length === 0
 
   const onSubmit = (values: CreateTransactionFormValues) => {
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
     setRootError(null)
     createTransaction.mutate(toCreateTransactionPayload(values), {
-      onSuccess: () => onSuccess?.(),
+      onSuccess: (transaction) => {
+        isSubmittingRef.current = false
+        onSuccess?.(transaction)
+      },
       onError: (error) => {
-        setRootError(
-          error instanceof ApiError
-            ? error.messages.join(', ')
-            : 'Не удалось подключиться к серверу. Попробуйте ещё раз.'
-        )
+        isSubmittingRef.current = false
+        setRootError(getApiErrorMessage(error))
       },
     })
   }
@@ -208,7 +214,10 @@ export function CreateTransactionForm({
               Отмена
             </Button>
           )}
-          <Button type="submit" disabled={createTransaction.isPending || hasNoCategories}>
+          <Button
+            type="submit"
+            disabled={createTransaction.isPending || hasNoCategories || !categories.isSuccess}
+          >
             {createTransaction.isPending ? 'Сохраняем…' : 'Добавить'}
           </Button>
         </>

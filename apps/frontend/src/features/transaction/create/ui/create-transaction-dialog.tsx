@@ -3,6 +3,7 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 
+import type { Transaction } from '@/entities/transaction'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -17,16 +18,16 @@ import {
 import { CreateTransactionForm } from './create-transaction-form'
 
 interface CreateTransactionDialogProps {
-  /** Вызывается после успешного создания, когда диалог уже закрыт. */
-  onCreated?: () => void
+  /** Вызывается после успешного создания (с созданной транзакцией), когда диалог уже закрыт. */
+  onCreated?: (transaction: Transaction) => void
 }
 
 export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogProps) {
   const [open, setOpen] = useState(false)
 
-  const handleSuccess = () => {
+  const handleSuccess = (transaction: Transaction) => {
     setOpen(false)
-    onCreated?.()
+    onCreated?.(transaction)
   }
 
   return (
