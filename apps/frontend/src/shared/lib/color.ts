@@ -23,6 +23,15 @@ function toLinear(channel: number): number {
   return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4
 }
 
+function relativeLuminance(r: number, g: number, b: number): number {
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+}
+
+// Значок категории (единственный сегодняшний вызывающий, transaction-row.tsx) рисуется
+// внутри Card, чей фон — --card / --surface-2 (#0F131C), а не страничный --surface-0.
+// Используем именно его для смешения по alpha, а не яркость ~0 «на глаз».
+const UNDERLYING_SURFACE_LUMINANCE = relativeLuminance(15, 19, 28)
+
 /** Цвет текста поверх фона произвольного HEX-цвета: тёмный на светлом, светлый на тёмном. */
 export function getReadableTextColor(backgroundHex: string): string {
   const parsed = parseHexColor(backgroundHex)
@@ -30,10 +39,9 @@ export function getReadableTextColor(backgroundHex: string): string {
     return LIGHT_TEXT
   }
   const [r, g, b, a] = parsed
-  const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
-  // Цвет рисуется поверх тёмного фона (--surface-0 ≈ чёрный, яркость ~0), поэтому при
-  // полупрозрачности (alpha < 1) реальная яркость смешивается с ним — без этого
-  // полупрозрачный светлый цвет ошибочно давал тёмный (нечитаемый на факте) текст.
-  const effectiveLuminance = luminance * a
+  const luminance = relativeLuminance(r, g, b)
+  // При полупрозрачности (alpha < 1) реальная воспринимаемая яркость — смесь цвета
+  // категории и фона под ним, а не яркость самого цвета «как есть».
+  const effectiveLuminance = luminance * a + UNDERLYING_SURFACE_LUMINANCE * (1 - a)
   return effectiveLuminance > LUMINANCE_THRESHOLD ? DARK_TEXT : LIGHT_TEXT
 }

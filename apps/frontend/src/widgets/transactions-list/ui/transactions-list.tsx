@@ -2,10 +2,17 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { CreateTransactionDialog } from '@/features/transaction/create'
 import { useCategories } from '@/entities/category'
-import { TRANSACTIONS_PAGE_SIZE, TransactionRow, useTransactions } from '@/entities/transaction'
+import {
+  TRANSACTIONS_PAGE_SIZE,
+  TransactionRow,
+  transactionKeys,
+  useTransactions,
+  type PaginatedTransactions,
+} from '@/entities/transaction'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import {
@@ -24,6 +31,7 @@ export function TransactionsList() {
   const [page, setPage] = useState(1)
   const transactions = useTransactions(page)
   const categories = useCategories()
+  const queryClient = useQueryClient()
 
   const categoriesById = useMemo(
     () => new Map((categories.data ?? []).map((category) => [category.id, category])),
@@ -61,12 +69,16 @@ export function TransactionsList() {
         <CardAction>
           <CreateTransactionDialog
             onCreated={(transaction) => {
-              // На первую страницу переходим, только если новая транзакция там реально окажется
-              // (список отсортирован по дате desc): иначе, например, при добавлении задним числом,
-              // пользователя уводило на страницу 1, где транзакции не было — выглядело как будто
-              // создание не сработало.
-              const topItem = data?.items[0]
-              if (!topItem || transaction.date >= topItem.date) {
+              // На страницу 1 переходим, только если новая транзакция там реально окажется
+              // (список отсортирован по дате desc) — сравниваем именно с границей страницы 1
+              // (из кэша, если она туда уже когда-то загружалась), а не с текущей открытой
+              // страницей: иначе, например, находясь на странице 5, легко получить transaction.date
+              // «новее» верхней записи страницы 5, но саму транзакцию — не на странице 1, а на 3-й.
+              const page1 = queryClient.getQueryData<PaginatedTransactions>(
+                transactionKeys.list({ page: 1, limit: TRANSACTIONS_PAGE_SIZE })
+              )
+              const page1TopDate = page1?.items[0]?.date
+              if (!page1TopDate || transaction.date >= page1TopDate) {
                 setPage(1)
               }
             }}
