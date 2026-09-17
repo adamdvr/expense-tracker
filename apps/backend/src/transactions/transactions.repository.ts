@@ -13,17 +13,27 @@ export class TransactionsRepository {
     return this.prisma.transaction.create({ data: { ...data, userId } })
   }
 
-  findAllByUser(userId: string, filters: FindTransactionsQueryDto): Promise<Transaction[]> {
-    const { dateFrom, dateTo, type, categoryId } = filters
+  async findAllByUser(
+    userId: string,
+    filters: FindTransactionsQueryDto
+  ): Promise<{ items: Transaction[]; total: number }> {
+    const { dateFrom, dateTo, type, categoryId, page, limit } = filters
     const where: Prisma.TransactionWhereInput = { userId, type, categoryId }
     if (dateFrom || dateTo) {
       where.date = { gte: dateFrom, lte: dateTo }
     }
 
-    return this.prisma.transaction.findMany({
-      where,
-      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-    })
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.transaction.findMany({
+        where,
+        orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.transaction.count({ where }),
+    ])
+
+    return { items, total }
   }
 
   findByIdAndUser(id: string, userId: string): Promise<Transaction | null> {

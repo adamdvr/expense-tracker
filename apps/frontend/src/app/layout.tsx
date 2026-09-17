@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
   title: 'Трекер расходов',
@@ -21,7 +22,9 @@ export default function RootLayout({
   // остального дерева (в т.ч. реальные ошибки) по-прежнему проверяет.
   return (
     <html lang="ru" className="dark" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }

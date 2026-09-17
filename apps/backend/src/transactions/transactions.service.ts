@@ -5,6 +5,7 @@ import { FindTransactionsQueryDto } from './dto/find-transactions-query.dto'
 import { SummaryQueryDto } from './dto/summary-query.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
 import { CategorySummaryEntity, TransactionSummaryEntity } from './entities/transaction-summary.entity'
+import { TransactionsPage } from './entities/paginated-transactions.entity'
 import { TransactionsRepository } from './transactions.repository'
 
 @Injectable()
@@ -16,8 +17,9 @@ export class TransactionsService {
     return this.transactionsRepository.create(userId, dto)
   }
 
-  findAll(userId: string, query: FindTransactionsQueryDto): Promise<Transaction[]> {
-    return this.transactionsRepository.findAllByUser(userId, query)
+  async findAll(userId: string, query: FindTransactionsQueryDto): Promise<TransactionsPage> {
+    const { items, total } = await this.transactionsRepository.findAllByUser(userId, query)
+    return { items, total, page: query.page, limit: query.limit }
   }
 
   findOne(id: string, userId: string): Promise<Transaction> {

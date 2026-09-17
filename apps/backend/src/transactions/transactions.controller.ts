@@ -19,6 +19,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto'
 import { FindTransactionsQueryDto } from './dto/find-transactions-query.dto'
 import { SummaryQueryDto } from './dto/summary-query.dto'
 import { UpdateTransactionDto } from './dto/update-transaction.dto'
+import { PaginatedTransactionsEntity } from './entities/paginated-transactions.entity'
 import { TransactionSummaryEntity } from './entities/transaction-summary.entity'
 import { TransactionEntity } from './entities/transaction.entity'
 import { TransactionsService } from './transactions.service'
@@ -42,16 +43,20 @@ export class TransactionsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получение транзакций пользователя с фильтрами' })
-  @ApiResponse({ status: 200, description: 'Список транзакций', type: [TransactionEntity] })
-  @ApiResponse({ status: 400, description: 'Некорректные параметры фильтра' })
+  @ApiOperation({ summary: 'Получение транзакций пользователя с фильтрами и пагинацией' })
+  @ApiResponse({
+    status: 200,
+    description: 'Страница транзакций',
+    type: PaginatedTransactionsEntity,
+  })
+  @ApiResponse({ status: 400, description: 'Некорректные параметры фильтра или пагинации' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   async findAll(
     @CurrentUser() user: User,
     @Query() query: FindTransactionsQueryDto
-  ): Promise<TransactionEntity[]> {
-    const transactions = await this.transactionsService.findAll(user.id, query)
-    return transactions.map((transaction) => new TransactionEntity(transaction))
+  ): Promise<PaginatedTransactionsEntity> {
+    const page = await this.transactionsService.findAll(user.id, query)
+    return new PaginatedTransactionsEntity(page)
   }
 
   // Объявлен до GET :id, иначе "summary" будет пойман как id

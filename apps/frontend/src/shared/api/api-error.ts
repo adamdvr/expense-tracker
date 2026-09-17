@@ -14,3 +14,10 @@ export class ApiError extends Error {
     this.messages = messages
   }
 }
+
+const DEFAULT_ERROR_MESSAGE = 'Не удалось подключиться к серверу. Попробуйте ещё раз.'
+
+/** Текст для пользователя из ошибки запроса: сообщения `ApiError` или дефолт для сетевых сбоев. */
+export function getApiErrorMessage(error: unknown, fallback = DEFAULT_ERROR_MESSAGE): string {
+  return error instanceof ApiError ? error.messages.join(', ') : fallback
+}
