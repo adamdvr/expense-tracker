@@ -29,8 +29,7 @@ function relativeLuminance(r: number, g: number, b: number): number {
 
 // Значок категории (единственный сегодняшний вызывающий, transaction-row.tsx) рисуется
 // внутри Card, чей фон — --card / --surface-2 (#0F131C), а не страничный --surface-0.
-// Используем именно его для смешения по alpha, а не яркость ~0 «на глаз».
-const UNDERLYING_SURFACE_LUMINANCE = relativeLuminance(15, 19, 28)
+const UNDERLYING_SURFACE_RGB = [15, 19, 28] as const
 
 /** Цвет текста поверх фона произвольного HEX-цвета: тёмный на светлом, светлый на тёмном. */
 export function getReadableTextColor(backgroundHex: string): string {
@@ -39,9 +38,11 @@ export function getReadableTextColor(backgroundHex: string): string {
     return LIGHT_TEXT
   }
   const [r, g, b, a] = parsed
-  const luminance = relativeLuminance(r, g, b)
-  // При полупрозрачности (alpha < 1) реальная воспринимаемая яркость — смесь цвета
-  // категории и фона под ним, а не яркость самого цвета «как есть».
-  const effectiveLuminance = luminance * a + UNDERLYING_SURFACE_LUMINANCE * (1 - a)
-  return effectiveLuminance > LUMINANCE_THRESHOLD ? DARK_TEXT : LIGHT_TEXT
+  // Альфа-композитинг — в sRGB (гамма-)пространстве поверх фона под значком, как это
+  // делает браузер, и только потом линеаризация для яркости: sRGB→linear нелинейна
+  // (степень ~2.4), поэтому смешивание уже линеаризованных яркостей по alpha давало
+  // систематически завышенную яркость и могло перевернуть решение тёмный/светлый текст.
+  const [bgR, bgG, bgB] = UNDERLYING_SURFACE_RGB
+  const luminance = relativeLuminance(r * a + bgR * (1 - a), g * a + bgG * (1 - a), b * a + bgB * (1 - a))
+  return luminance > LUMINANCE_THRESHOLD ? DARK_TEXT : LIGHT_TEXT
 }

@@ -138,7 +138,10 @@ export function TransactionsList() {
               variant="outline"
               size="sm"
               onClick={() => setPage((current) => current - 1)}
-              disabled={page <= 1 || transactions.isPlaceholderData || transactions.isError}
+              // Без isError: страница current-1 уже была открыта раньше (навигация только
+              // последовательная) и, скорее всего, в кэше — блокировать «Назад» при ошибке
+              // ТЕКУЩЕЙ страницы значит закрыть путь на уже рабочую, просто увиденную страницу.
+              disabled={page <= 1 || transactions.isPlaceholderData}
             >
               <ChevronLeft data-icon="inline-start" />
               Назад
