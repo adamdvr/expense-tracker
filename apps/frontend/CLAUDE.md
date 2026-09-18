@@ -1,6 +1,6 @@
 # CLAUDE.md (frontend)
 
-Эта инструкция дополняет корневой [`CLAUDE.md`](../../CLAUDE.md) и применяется при работе внутри `apps/frontend`. Общие для монорепозитория правила (git-flow, коммиты, docker, turborepo) — там.
+Эта инструкция дополняет корневой [`CLAUDE.md`](../../CLAUDE.md) и применяется при работе внутри `apps/frontend`. Общие для монорепозитория правила (git-flow, docker, turborepo) — там; правила коммитов — в skill [`commit`](../../.claude/skills/commit/SKILL.md).
 
 ## Архитектура
 
