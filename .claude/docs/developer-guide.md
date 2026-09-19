@@ -305,12 +305,12 @@ export function useCreateBudget() {
 
 ## 8. Git, коммиты и Pull Request
 
-Полные правила веток и PR — в корневом `CLAUDE.md`, правила коммитов — в skill `.claude/skills/commit/SKILL.md` (`/commit`). Коротко:
+Полные правила веток — в корневом `CLAUDE.md`, правила коммитов — в skill `.claude/skills/commit/SKILL.md` (`/commit`), создание PR — в skill `.claude/skills/pr/SKILL.md` (`/pr`). Коротко:
 
 1. `master` всегда рабочий, напрямую в него не коммитят. Каждая задача — отдельная ветка от актуального `master`: `<type>/<scope>-<описание>`, например `feat/frontend-budgets`, `fix/auth-token-refresh`, `docs/claude-docs`.
 2. Коммиты — [Conventional Commits](https://www.conventionalcommits.org/) на русском, в инфинитиве: `feat(transactions): добавить фильтр по категории`. Breaking change помечается `!` и футером `BREAKING CHANGE: …`. Миграция Prisma идёт в одном коммите со схемой.
 3. **Перед коммитом** должны проходить `npm run typecheck`, `npm run lint` и `npm run build`. CI их **не запускает**, так что проверка лежит на авторе.
-4. Перед PR ветка актуализируется относительно `master` (rebase или merge), конфликты решаются в ветке. PR создаётся через `gh pr create`, тело — `## Summary` / `## Почему` / `## Test plan`.
+4. Перед PR ветка актуализируется относительно `master` (rebase или merge), конфликты решаются в ветке. PR создаётся через `/pr [--title "<заголовок>"] [--branch <ветка>]` (`gh pr create`), тело — `## Summary` / `## Почему` / `## Test plan`.
 5. На каждый PR автоматически запускается код-ревью Claude (`.github/workflows/claude-code-review.yml`). Упоминание `@claude` в комментарии вызывает Claude для любого запроса. Правила ревью — `REVIEW.md`.
 6. После слияния ветка удаляется.
 
@@ -320,7 +320,9 @@ export function useCreateBudget() {
 |---|---|
 | `.claude/docs/` | Эта документация |
 | `.claude/plans/` | Планы фич с чек-листами задач (`home-page.md`, `transactions.md`, …) — история того, как и почему строились фичи |
+| `.claude/settings.json` | Общие права Claude Code: `git push` и `gh pr create` всегда требуют подтверждения, force push запрещён |
 | `.claude/skills/commit/` | Skill `/commit`: коммит в ветку по правилам проекта (Conventional Commits, проверки, что не коммитить) |
+| `.claude/skills/pr/` | Skill `/pr [--title "<заголовок>"] [--branch <ветка>]` (только ручной вызов): создание PR в `master` — актуализация ветки, проверки, push, заголовок по Conventional Commits, описание Summary/Почему/Test plan |
 | `.claude/skills/standup/` | Skill `/standup [YYYY-MM-DD]` (только ручной вызов): короткий отчёт (пара абзацев) о сделанном за вчера или за указанный день |
 | `.claude/templates/feature.md` | Шаблон промпта для новой фичи |
 | `.claude/prompts/`, `.claude/tasks/` | Использованные промпты и чек-листы задач |
