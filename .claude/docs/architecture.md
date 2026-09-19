@@ -373,7 +373,7 @@ sequenceDiagram
 | `.github/workflows/claude-code-review.yml` | открытие, обновление, reopen и `ready_for_review` PR | Плагин `code-review` для Claude Code (`anthropics/claude-code-action`) публикует замечания в PR. Правила ревью проекта описаны в `REVIEW.md` |
 | `.github/workflows/claude.yml` | упоминание `@claude` в issue, PR или комментарии | Claude выполняет запрос из комментария |
 
-`typecheck`, `lint` и `build` в CI **не запускаются**: их прогоняют локально перед коммитом, как требует `CLAUDE.md`. Автотестов в проекте пока нет.
+`typecheck`, `lint`, `build` и тесты в CI **не запускаются**: их прогоняют локально перед коммитом, как требует `CLAUDE.md`. Unit-тесты (Jest) пока есть только в backend (`npm run test -w @tracker/backend`).
 
 ---
 
