@@ -324,6 +324,7 @@ export function useCreateBudget() {
 | `.claude/skills/commit/` | Skill `/commit`: коммит в ветку по правилам проекта (Conventional Commits, проверки, что не коммитить) |
 | `.claude/skills/pr/` | Skill `/pr [--title "<заголовок>"] [--branch <ветка>]` (только ручной вызов): создание PR в `master` — актуализация ветки, проверки, push, заголовок по Conventional Commits, описание Summary/Почему/Test plan |
 | `.claude/skills/standup/` | Skill `/standup [YYYY-MM-DD]` (только ручной вызов): короткий отчёт (пара абзацев) о сделанном за вчера или за указанный день |
+| `.claude/skills/test/` | Skill `/test <путь к файлу>` (только ручной вызов): unit-тест на файл backend или frontend — проверка тестовой инфраструктуры, тест рядом с файлом, прогон теста, typecheck и lint |
 | `.claude/templates/feature.md` | Шаблон промпта для новой фичи |
 | `.claude/prompts/`, `.claude/tasks/` | Использованные промпты и чек-листы задач |
 
@@ -331,7 +332,7 @@ export function useCreateBudget() {
 
 ## 9. Проверка изменений
 
-Автотестов в проекте пока нет: скрипта `test` и файлов `*.spec.ts` нет. Минимальная проверка любого изменения:
+Автотестов в проекте пока нет: скрипта `test` и файлов `*.spec.ts` нет. Skill `/test <путь к файлу>` пишет unit-тест на файл, но сначала требует настроенного раннера (Jest в backend, Vitest во frontend) — без него он остановится и предложит настроить его отдельной задачей. Минимальная проверка любого изменения:
 
 1. `npm run typecheck && npm run lint && npm run build` из корня.
 2. **Backend** — через Swagger (http://localhost:3001/api) или curl:
