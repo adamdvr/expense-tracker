@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "types": ["jest", "node"],
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {

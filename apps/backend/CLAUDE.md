@@ -40,6 +40,10 @@ npm run dev
 # Production сборка
 npm run build
 
+# Unit-тесты (Jest, *.spec.ts рядом с кодом; в nest build не попадают — tsconfig.build.json)
+npm run test
+npm run test -- src/transactions/transactions.service.spec.ts
+
 # Генерация Prisma Client (после изменения schema)
 npm run prisma:generate
 
