@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 import { useSession } from '@/entities/session'
-import { Separator } from '@/shared/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/shared/ui/sidebar'
 import { isNavigationItemActive, NAVIGATION_ITEMS } from '../config/navigation'
 import { AppSidebar } from './app-sidebar'
@@ -39,12 +38,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <AppSidebar user={session.user} />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mx-1 my-4" />
-          <h1 className="text-sm font-medium">{pageTitle}</h1>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
+        <div className="flex flex-1 flex-col gap-8 p-5 md:p-10">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-2" />
+            <h1 className="text-[1.75rem] leading-tight font-bold tracking-tight">{pageTitle}</h1>
+          </div>
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
