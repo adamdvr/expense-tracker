@@ -321,6 +321,7 @@ export function useCreateBudget() {
 | `.claude/docs/` | Эта документация |
 | `.claude/plans/` | Планы фич с чек-листами задач (`home-page.md`, `transactions.md`, …) — история того, как и почему строились фичи |
 | `.claude/skills/commit/` | Skill `/commit`: коммит в ветку по правилам проекта (Conventional Commits, проверки, что не коммитить) |
+| `.claude/skills/standup/` | Skill `/standup [YYYY-MM-DD]` (только ручной вызов): короткий отчёт (пара абзацев) о сделанном за вчера или за указанный день |
 | `.claude/templates/feature.md` | Шаблон промпта для новой фичи |
 | `.claude/prompts/`, `.claude/tasks/` | Использованные промпты и чек-листы задач |
 
