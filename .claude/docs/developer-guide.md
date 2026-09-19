@@ -332,9 +332,9 @@ export function useCreateBudget() {
 
 ## 9. Проверка изменений
 
-Автотестов в проекте пока нет: скрипта `test` и файлов `*.spec.ts` нет. Skill `/test <путь к файлу>` пишет unit-тест на файл, но сначала требует настроенного раннера (Jest в backend, Vitest во frontend) — без него он остановится и предложит настроить его отдельной задачей. Минимальная проверка любого изменения:
+Unit-тесты есть только в backend: Jest, файлы `*.spec.ts` рядом с кодом, запуск — `npm run test -w @tracker/backend`. Пока покрыт только `TransactionsService`. Во frontend тестового раннера нет. Skill `/test <путь к файлу>` пишет unit-тест на файл; для frontend он остановится и предложит сначала настроить Vitest отдельной задачей. Минимальная проверка любого изменения:
 
-1. `npm run typecheck && npm run lint && npm run build` из корня.
+1. `npm run typecheck && npm run lint && npm run build` из корня; при изменениях в backend — ещё `npm run test -w @tracker/backend`.
 2. **Backend** — через Swagger (http://localhost:3001/api) или curl:
    ```bash
    TOKEN=$(curl -s -X POST http://localhost:3001/auth/login \
@@ -375,7 +375,7 @@ export function useCreateBudget() {
 
 **Инфраструктура**
 - **Полный стек в Docker не собирается.** `docker-compose up` падает на `npm ci` (`EUSAGE`): `Dockerfile` в `apps/backend` и `apps/frontend` копирует только `package*.json` приложения, а `package-lock.json` есть только в корне монорепозитория. Кроме того, в `docker-compose.yml` backend-контейнеру через `environment` передаются только `DATABASE_URL`, `PORT` и `NODE_ENV`. `JWT_SECRET`, `JWT_EXPIRES_IN` и `FRONTEND_URL` попадут в контейнер только из смонтированного каталога — то есть если на хосте есть `apps/backend/.env`. Рабочий режим — БД в Docker, приложения на хосте ([раздел 2](#2-быстрый-старт)).
-- **Нет автотестов**, а в CI не запускаются `typecheck`, `lint` и `build` — только ИИ-ревью.
+- **Автотестов почти нет**: в backend покрыт только `TransactionsService`, во frontend тестового раннера нет. В CI не запускаются ни тесты, ни `typecheck`, `lint` и `build` — только ИИ-ревью.
 - **`README.md` устарел**: упоминает несуществующий скрипт `npm run install:all`, «CSS без внешних библиотек» и модели `Expense` и `Category` как будущие. Ориентируйтесь на `CLAUDE.md` и эту документацию.
 
 **Frontend**
