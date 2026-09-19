@@ -5,34 +5,26 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Дизайн-токены проекта (палитра/спейсинг, не входят в тему shadcn напрямую) */
-  --surface-0: #05070C;
-  --surface-1: #0A0D12;
-  --surface-2: #0F131C;
-  --surface-3: #161D2B;
-  --surface-4: #1E2636;
+  color-scheme: light;
 
-  --brand: #38BDF8;
-  --brand-dim: #0C4A6E;
+  /* Палитра проекта. Тема одна — светлая, токены shadcn ниже смэплены на неё. */
+  --canvas: #EFEFF2; /* фон страницы и бокового меню */
+  --paper: #FAFAFB; /* панель контента, карточки */
+  --ink: #15121F; /* текст, тёмные карточки, основная кнопка */
 
-  --success: #34D399;
+  /* Пастельные заливки: доход / нейтральное / расход */
+  --mint: #E3F6E5;
+  --periwinkle: #E5E9F8;
+  --peach: #FBE7DD;
 
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-dim: #64748B;
+  --field: #F1F1F4; /* заливка полей ввода и вторичных поверхностей */
+  --line: #E6E6EA; /* разделители */
+  --ink-muted: #666672; /* вторичный текст, ≥4.9:1 на --canvas и --paper */
+  --success: #187A41; /* доход; ≥5:1 на --paper и --mint */
+  --danger: #B8322B; /* ошибки; ≥4.5:1 и на плашке destructive/10 */
 
-  --radius-full: 999px;
-
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-
-  /* Базовый радиус темы shadcn — от него считаются --radius-sm/md/lg/xl... в @theme inline */
-  --radius: 0.625rem;
+  /* Базовый радиус темы shadcn — от него считается шкала --radius-* в @theme inline */
+  --radius: 1rem;
 }
 
 @layer base {
@@ -40,12 +32,22 @@
   body {
     max-width: 100vw;
     overflow-x: hidden;
-    line-height: 1.6;
+    line-height: 1.5;
   }
 }
 
 @theme inline {
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: var(--canvas);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-mint: var(--mint);
+  --color-periwinkle: var(--periwinkle);
+  --color-peach: var(--peach);
+  --color-field: var(--field);
+  --color-line: var(--line);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -78,63 +80,65 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+
+  /* Радиусы по иерархии: 8 / 12 / 16 — контролы, 24 — карточки и диалоги, 32+ — крупные панели. Кнопки и поля — rounded-full. */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 2.5);
+  --radius-4xl: calc(var(--radius) * 3);
 }
 
 /*
- * Проект использует только тёмную тему (без переключателя) — `<html>` всегда
- * получает класс `dark` в app/layout.tsx, поэтому все цветовые токены темы
- * shadcn заданы здесь, а не в :root. Смэплены на палитру проекта выше.
+ * Проект использует только светлую тему (без переключателя): токены темы shadcn
+ * заданы прямо в :root и смэплены на палитру проекта выше. Класс `dark` нигде
+ * не выставляется, поэтому `dark:`-варианты в компонентах не срабатывают.
  */
-.dark {
-  --background: var(--surface-0);
-  --foreground: var(--text-primary);
+:root {
+  --background: var(--paper);
+  --foreground: var(--ink);
 
-  --card: var(--surface-2);
-  --card-foreground: var(--text-primary);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
 
-  --popover: var(--surface-2);
-  --popover-foreground: var(--text-primary);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--ink);
 
-  --primary: var(--brand);
-  --primary-foreground: var(--surface-0);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
 
-  --secondary: var(--surface-3);
-  --secondary-foreground: var(--text-primary);
+  --secondary: #EAEAEE;
+  --secondary-foreground: var(--ink);
 
-  --muted: var(--surface-2);
-  --muted-foreground: var(--text-secondary);
+  --muted: var(--field);
+  --muted-foreground: var(--ink-muted);
 
-  --accent: var(--surface-3);
-  --accent-foreground: var(--text-primary);
+  --accent: #EAEAEE;
+  --accent-foreground: var(--ink);
 
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: var(--danger);
   --income: var(--success);
 
-  --border: var(--surface-3);
-  --input: var(--surface-3);
-  --ring: var(--brand);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink);
 
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --chart-1: var(--ink);
+  --chart-2: #4A4757;
+  --chart-3: #666672;
+  --chart-4: #A3A3AD;
+  --chart-5: #D0D0D6;
 
-  --sidebar: var(--surface-1);
-  --sidebar-foreground: var(--text-primary);
-  --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: var(--surface-0);
-  --sidebar-accent: var(--surface-3);
-  --sidebar-accent-foreground: var(--text-primary);
-  --sidebar-border: var(--surface-3);
-  --sidebar-ring: var(--brand);
+  --sidebar: var(--canvas);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--ink);
 }
 
 @layer base {
@@ -142,9 +146,25 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-canvas text-foreground antialiased;
   }
   html {
     @apply font-sans;
+  }
+  /* Ссылки вне компонентов (напр. в формах и на юридических страницах) — заметный фокус с клавиатуры. */
+  a:focus-visible {
+    @apply rounded-sm outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/* Уважаем системную настройку «уменьшить движение»: анимации и переходы фактически отключаются. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
