@@ -8,7 +8,7 @@
 - **Архитектура**: Feature-Sliced Design (FSD) — см. раздел «Feature-Sliced Design» ниже
 - **UI-кит**: shadcn/ui (примитивы Base UI, пресет Nova) поверх Tailwind CSS v4
 - **Загрузка данных**: TanStack Query (`@tanstack/react-query`); формы — react-hook-form + zod
-- **Стилизация**: CSS-переменные темы shadcn, смэппленные на палитру проекта в `globals.css`. Тема одна — тёмная, без переключателя (класс `dark` статически задан в `app/layout.tsx`)
+- **Стилизация**: CSS-переменные темы shadcn, смэппленные на палитру проекта в `globals.css`. Тема одна — светлая, без переключателя (токены заданы в `:root`, класс `dark` не выставляется). Шрифт — Onest (`next/font/google`, кириллица), переменная `--font-onest`
 - **Порт**: 3000 (по умолчанию)
 
 **Архитектурные детали:**
@@ -17,7 +17,7 @@
 - API URL конфигурируется через `NEXT_PUBLIC_API_URL` env переменную
 - `app/providers.tsx` — `QueryClientProvider`, `TooltipProvider` и регистрация источника токена: `setAuthTokenGetter(() => getSession()?.accessToken)`. `shared/api` не импортирует `entities/session` (это нарушило бы порядок FSD-слоёв), поэтому `apiClient` получает токен через этот getter и сам подставляет `Authorization: Bearer`. Там же `setUnauthorizedHandler(() => clearSession())` — 401 на запросе с токеном сбрасывает сессию (`AppShell` уводит на `/login`), и сброс кэша TanStack Query при смене пользователя: ключи кэша не содержат id пользователя. Запросы с ошибкой 4xx не повторяются
 - `shared/api/client.ts`: `/auth/*` (логин, регистрация) никогда не получает текущий токен и не может вызвать `onUnauthorized()` — иначе неверный пароль на `/login` у уже залогиненного пользователя сбросил бы его рабочую сессию. Каждый запрос по умолчанию обрывается через 15с (`AbortSignal.timeout`), чтобы зависший запрос не держал UI в состоянии загрузки бесконечно
-- Авторизованные страницы живут в route group `app/(dashboard)/` — её `layout.tsx` оборачивает их в `widgets/app-shell` (боковое меню, профиль, шапка); `AppShell` намеренно не рендерит `children`, пока `useSession()` не вернёт `authenticated` (иначе запросы к API уйдут без токена/до гидратации сессии из localStorage). Новые разделы приложения добавляются туда же, пункт меню — в `widgets/app-shell/config/navigation.ts`
+- Авторизованные страницы живут в route group `app/(dashboard)/` — её `layout.tsx` оборачивает их в `widgets/app-shell` (боковое меню, карточка профиля; заголовок страницы `h1` рисует сам `AppShell` внутри панели контента); `AppShell` намеренно не рендерит `children`, пока `useSession()` не вернёт `authenticated` (иначе запросы к API уйдут без токена/до гидратации сессии из localStorage). Новые разделы приложения добавляются туда же, пункт меню — в `widgets/app-shell/config/navigation.ts`
 - Сессия хранится в `localStorage` (`entities/session`) и синхронизируется через `useSyncExternalStore` + кастомное событие `tracker:session-change` (нативный `storage`-event не срабатывает в той же вкладке); в компонентах читается хуком `useSession()` → `{ status: 'loading' | 'authenticated' | 'unauthenticated', session }`
 - Даты транзакций бэкенд хранит как полночь UTC — `shared/lib/format.ts` форматирует и парсит их именно в UTC (`timeZone: 'UTC'`), иначе в западных часовых поясах дата визуально съезжает на день назад
 
@@ -67,7 +67,9 @@ src/
 - Компоненты ставятся командой `npx shadcn add <component>` из `apps/frontend` — алиасы в `components.json` настроены так, что файлы попадают сразу в `src/shared/ui` (а не в дефолтный `src/components/ui`).
 - Текущая версия shadcn CLI (4.x) использует **Base UI** (`@base-ui/react`) как примитивы вместо Radix UI, и отдельный пакет `cn` вместо локальной склейки `clsx`+`tailwind-merge`. Пресет — Nova (`base-nova`), базовый цвет — `neutral`.
 - Готового `Form`-компонента (react-hook-form через контекст) в реестре больше нет — вместо него примитивы `Field`/`FieldGroup`/`FieldLabel`/`FieldError` (`shared/ui/field.tsx`), которые собираются вручную вокруг `useForm()`. `FieldError` принимает `errors` в формате react-hook-form (`{ message }[]`).
-- Тема только тёмная (без переключателя): цветовые токены shadcn (`--background`, `--primary`, `--border` и т.д.) заданы в блоке `.dark` в `globals.css`, смэпплены на палитру проекта (`--surface-*`, `--brand`, `--text-*`); класс `dark` статически зафиксирован на `<html>` в `app/layout.tsx`.
+- Тема только светлая (без переключателя): палитра проекта — `--canvas` (фон страницы и сайдбара), `--paper` (панель контента, карточки), `--ink` (текст, тёмные карточки, основная кнопка), пастель `--mint` / `--periwinkle` / `--peach`, а также `--field`, `--line`, `--ink-muted`. Токены shadcn (`--background`, `--primary`, `--border` и т.д.) заданы в `:root` в `globals.css` и смэпплены на неё. Класс `dark` нигде не выставляется, поэтому `dark:`-варианты в компонентах не работают — не добавлять их в `shared/ui`.
+- Радиусы по иерархии (`--radius: 1rem`): `rounded-xl` = 24px (карточки, диалоги), `rounded-2xl` = 32px (панель контента, тёмная карточка профиля), `rounded-full` — кнопки, поля, пилюли меню. Границы почти не используются: разделение тоном заливки (`bg-muted`, `bg-secondary`), а не рамками и тенями.
+- Вторичный текст — `text-muted-foreground` (`--ink-muted`, ≥4.9:1 на `--canvas` и `--paper`); более светлые серые для текста не использовать — не проходят WCAG AA.
 
 ### Паттерны из виджета транзакций
 

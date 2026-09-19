@@ -1,4 +1,5 @@
-import { getReadableTextColor } from '@/shared/lib/color'
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+
 import { cn } from '@/shared/lib/utils'
 import { formatDate, formatMoney } from '@/shared/lib/format'
 import type { Transaction } from '../model/types'
@@ -18,39 +19,51 @@ interface TransactionRowProps {
 export function TransactionRow({ transaction, category, className }: TransactionRowProps) {
   const isIncome = transaction.type === 'INCOME'
   const categoryName = category?.name ?? 'Без категории'
+  const DirectionIcon = isIncome ? ArrowDownLeft : ArrowUpRight
 
   return (
-    <div className={cn('flex items-center gap-3 py-3', className)}>
+    <div className={cn('flex items-center gap-4 py-3', className)}>
+      {/* Направление денег: пастельный круг + стрелка. Цвет категории — точка у названия,
+          он задаётся пользователем и на светлом фоне не подходит для заливки. */}
       <span
         aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-foreground"
-        style={
-          category
-            ? { backgroundColor: category.color, color: getReadableTextColor(category.color) }
-            : { backgroundColor: 'var(--muted)' }
-        }
+        className={cn(
+          'flex size-11 shrink-0 items-center justify-center rounded-full',
+          isIncome ? 'bg-mint text-income' : 'bg-peach text-foreground'
+        )}
       >
-        {categoryName.charAt(0).toUpperCase()}
+        <DirectionIcon className="size-5" />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{categoryName}</p>
+        <p className="flex items-center gap-2 text-sm font-medium">
+          {category && (
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: category.color }}
+            />
+          )}
+          <span className="truncate">{categoryName}</span>
+        </p>
         {transaction.description && (
-          <p className="truncate text-sm text-muted-foreground">{transaction.description}</p>
+          <p className={cn('truncate text-sm text-muted-foreground', category && 'pl-4')}>
+            {transaction.description}
+          </p>
         )}
       </div>
 
       <div className="shrink-0 text-right">
         <p
           className={cn(
-            'text-sm font-semibold tabular-nums',
+            'text-base font-bold tabular-nums',
             isIncome ? 'text-income' : 'text-foreground'
           )}
         >
           {isIncome ? '+' : '−'}
           {formatMoney(transaction.amount)}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <time dateTime={transaction.date}>{formatDate(transaction.date)}</time>
         </p>
       </div>

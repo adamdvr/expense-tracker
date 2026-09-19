@@ -8,15 +8,6 @@ import { useCategories } from '@/entities/category'
 import { TRANSACTIONS_PAGE_SIZE, TransactionRow, useTransactions } from '@/entities/transaction'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/shared/ui/card'
 import { Skeleton } from '@/shared/ui/skeleton'
 
 /** Последние транзакции пользователя с постраничной навигацией. */
@@ -52,26 +43,26 @@ export function TransactionsList() {
   const isLoading = transactions.isPending || categories.isPending
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Транзакции</CardTitle>
-        <CardDescription>
-          {data ? `Всего: ${data.total}` : 'Доходы и расходы, от новых к старым'}
-        </CardDescription>
-        <CardAction>
-          {/* Безусловный переход на страницу 1: попытки угадывать, окажется ли там новая
-              транзакция, по кэшу текущей или первой страницы — хрупкие (ломаются, как только
-              появятся фильтры по дате/категории/типу, меняющие ключ кэша страницы 1) и уже
-              требовали нескольких раундов патчей. Список всё равно инвалидируется целиком
-              (useCreateTransaction), так что «не увидел на странице 1» — редкий случай
-              транзакции задним числом, а не потеря данных. */}
-          <CreateTransactionDialog onCreated={() => setPage(1)} />
-        </CardAction>
-      </CardHeader>
+    <section className="flex flex-col gap-6">
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg leading-snug font-bold tracking-tight">Транзакции</h2>
+          <p className="text-sm text-muted-foreground">
+            {data ? `Всего: ${data.total}` : 'Доходы и расходы, от новых к старым'}
+          </p>
+        </div>
+        {/* Безусловный переход на страницу 1: попытки угадывать, окажется ли там новая
+            транзакция, по кэшу текущей или первой страницы — хрупкие (ломаются, как только
+            появятся фильтры по дате/категории/типу, меняющие ключ кэша страницы 1) и уже
+            требовали нескольких раундов патчей. Список всё равно инвалидируется целиком
+            (useCreateTransaction), так что «не увидел на странице 1» — редкий случай
+            транзакции задним числом, а не потеря данных. */}
+        <CreateTransactionDialog onCreated={() => setPage(1)} />
+      </header>
 
-      <CardContent>
+      <div>
         {categories.isError && (
-          <div className="mb-3 flex items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl bg-destructive/10 py-2 pr-2 pl-4 text-sm text-destructive">
             <span>Не удалось загрузить категории — транзакции показаны без них</span>
             <Button variant="ghost" size="sm" onClick={() => categories.refetch()}>
               Повторить
@@ -81,22 +72,19 @@ export function TransactionsList() {
         {isLoading ? (
           <TransactionsListSkeleton />
         ) : transactions.isError ? (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted py-12 text-center">
             <p className="text-sm text-muted-foreground">Не удалось загрузить транзакции</p>
             <Button variant="outline" size="sm" onClick={() => transactions.refetch()}>
               Повторить
             </Button>
           </div>
         ) : !data || data.total === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl bg-muted py-12 text-center text-sm text-muted-foreground">
             Транзакций пока нет — добавьте первую
           </p>
         ) : (
           <ul
-            className={cn(
-              'divide-y divide-border transition-opacity',
-              transactions.isPlaceholderData && 'opacity-60'
-            )}
+            className={cn('flex flex-col transition-opacity', transactions.isPlaceholderData && 'opacity-60')}
             aria-busy={transactions.isPlaceholderData}
           >
             {data.items.map((transaction) => (
@@ -109,10 +97,10 @@ export function TransactionsList() {
             ))}
           </ul>
         )}
-      </CardContent>
+      </div>
 
       {totalPages > 1 && (
-        <CardFooter className="justify-between gap-2">
+        <footer className="flex items-center justify-between gap-2">
           <span className="text-sm text-muted-foreground">
             Стр. {page} из {totalPages}
           </span>
@@ -139,18 +127,18 @@ export function TransactionsList() {
               <ChevronRight data-icon="inline-end" />
             </Button>
           </div>
-        </CardFooter>
+        </footer>
       )}
-    </Card>
+    </section>
   )
 }
 
 function TransactionsListSkeleton() {
   return (
-    <ul className="divide-y divide-border" aria-label="Загрузка транзакций">
+    <ul className="flex flex-col" aria-label="Загрузка транзакций">
       {Array.from({ length: TRANSACTIONS_PAGE_SIZE }, (_, index) => (
-        <li key={index} className="flex items-center gap-3 py-3">
-          <Skeleton className="size-9 rounded-full" />
+        <li key={index} className="flex items-center gap-4 py-3">
+          <Skeleton className="size-11 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-3 w-48" />

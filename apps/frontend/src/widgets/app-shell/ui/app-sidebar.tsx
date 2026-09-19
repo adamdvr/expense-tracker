@@ -11,7 +11,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -34,27 +33,27 @@ export function AppSidebar({ user }: { user: User }) {
   }
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
+    <Sidebar variant="inset" collapsible="icon">
+      <SidebarHeader className="px-3 pt-6 pb-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               tooltip="Трекер расходов"
+              className="text-sidebar-foreground"
               render={<Link href="/" onClick={handleNavigate} />}
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Wallet className="size-4" />
               </span>
-              <span className="truncate font-semibold">Трекер расходов</span>
+              <span className="truncate text-base font-bold tracking-tight">Трекер расходов</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Меню</SidebarGroupLabel>
+        <SidebarGroup className="px-3 py-4">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {NAVIGATION_ITEMS.map((item) => (
@@ -74,7 +73,7 @@ export function AppSidebar({ user }: { user: User }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="p-3 pb-4">
         <SidebarUser user={user} />
       </SidebarFooter>
 
