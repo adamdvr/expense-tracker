@@ -206,7 +206,7 @@ export default function BudgetsPage() {
 }
 ```
 
-Пункт меню добавляется в `NAVIGATION_ITEMS` (`apps/frontend/src/widgets/app-shell/config/navigation.ts`). Заголовок в шапке берётся оттуда же. Публичные страницы (как `/login`) кладутся вне `(dashboard)`.
+Пункт меню добавляется в `NAVIGATION_ITEMS` (`apps/frontend/src/widgets/app-shell/config/navigation.ts`). Заголовок страницы (`h1` в панели контента) берётся оттуда же. Публичные страницы (как `/login`) кладутся вне `(dashboard)`.
 
 ### 6.4. Загрузка данных с API (entity)
 
@@ -280,12 +280,13 @@ export function useCreateBudget() {
   |---|---|
   | `bg-background`, `bg-card`, `bg-muted` | Фоны: страница, карточки, приглушённые блоки |
   | `text-foreground`, `text-muted-foreground` | Основной и второстепенный текст |
-  | `bg-primary`, `text-primary` | Акцентный цвет (`--brand`) |
+  | `bg-primary`, `text-primary-foreground` | Основная кнопка и тёмные элементы (`--ink`) |
+  | `bg-canvas`, `bg-mint`, `bg-periwinkle`, `bg-peach` | Фон страницы и пастельные заливки (доход / нейтральное / расход) |
   | `text-destructive` | Ошибки |
   | `text-income` | Суммы доходов |
   | `border-border` | Границы |
 
-- Новый токен: цвет в палитру `:root` (`apps/frontend/src/app/globals.css`) → сопоставление в блоке `.dark` → `--color-<имя>` в `@theme inline`, после чего появится класс `text-<имя>` / `bg-<имя>`. Тема только тёмная.
+- Новый токен: цвет в палитру `:root` (`apps/frontend/src/app/globals.css`) → сопоставление токена shadcn (тоже в `:root`) → `--color-<имя>` в `@theme inline`, после чего появится класс `text-<имя>` / `bg-<имя>`. Тема только светлая, `dark:`-варианты не используются.
 - Иконки — `lucide-react`. Объединение классов — `cn()` из `@/shared/lib/utils`.
 
 ---

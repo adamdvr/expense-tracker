@@ -190,7 +190,7 @@ Frontend организован по адаптации [Feature-Sliced Design](
 ```mermaid
 flowchart TD
     app["app<br/>маршруты, layout, providers, globals.css"] --> widgets
-    widgets["widgets<br/>auth-layout · app-shell · transactions-list"] --> features
+    widgets["widgets<br/>auth-layout · app-shell · transactions-list · section-placeholder"] --> features
     features["features<br/>auth/login · auth/register · transaction/create"] --> entities
     entities["entities<br/>session · user · category · transaction"] --> shared
     shared["shared<br/>api · config · lib · hooks · ui"]
@@ -199,7 +199,7 @@ flowchart TD
 | Слой | Слайсы | Что внутри |
 |---|---|---|
 | `app/` | — | Маршруты (`page.tsx`, `layout.tsx`), `providers.tsx`, `globals.css` |
-| `widgets/` | `auth-layout`, `app-shell`, `transactions-list` | Композитные блоки UI: обёртка страниц входа, каркас авторизованной части, список транзакций |
+| `widgets/` | `auth-layout`, `app-shell`, `transactions-list`, `section-placeholder` | Композитные блоки UI: обёртка страниц входа, каркас авторизованной части, список транзакций, заглушка нереализованного раздела |
 | `features/` | `auth/login`, `auth/register`, `transaction/create` | Пользовательские сценарии: формы и мутации |
 | `entities/` | `session`, `user`, `category`, `transaction` | Бизнес-сущности: типы, запросы к API и query-хуки, хранение сессии, UI-строка транзакции |
 | `shared/` | `api`, `config`, `lib`, `hooks`, `ui` | HTTP-клиент, конфиг, утилиты (форматирование, цвета, `cn`), хуки и компоненты shadcn |
@@ -221,11 +221,11 @@ flowchart TD
 | `/terms` | `app/terms/page.tsx` | публичный | Пользовательское соглашение (статичный текст) |
 | `/privacy` | `app/privacy/page.tsx` | публичный | Политика обработки данных (статичный текст) |
 
-Route group `(dashboard)` не влияет на URL: её `layout.tsx` оборачивает страницы в `AppShell` — проверку сессии, боковое меню и шапку. Пункты меню задаются в `widgets/app-shell/config/navigation.ts`.
+Route group `(dashboard)` не влияет на URL: её `layout.tsx` оборачивает страницы в `AppShell` — проверку сессии, боковое меню, карточку профиля и заголовок страницы (`h1` внутри панели контента, без отдельной полосы-шапки). Пункты меню задаются в `widgets/app-shell/config/navigation.ts`.
 
 ### 5.3. Провайдеры и глобальная настройка
 
-`app/layout.tsx` задаёт `<html lang="ru" className="dark">` и оборачивает приложение в `Providers` (`app/providers.tsx`), который делает следующее:
+`app/layout.tsx` подключает шрифт Onest через `next/font/google` (переменная `--font-onest` на `<html lang="ru">`, класса `dark` нет) и оборачивает приложение в `Providers` (`app/providers.tsx`), который делает следующее:
 
 1. На уровне модуля регистрирует источник токена `setAuthTokenGetter(() => getSession()?.accessToken ?? null)` и реакцию на 401 `setUnauthorizedHandler(() => clearSession())`. Слой `shared/api` не может импортировать `entities/session`, поэтому связь выполняется через эти два хука в слое `app`.
 2. Создаёт `QueryClient` один раз (в `useState`) со значениями по умолчанию:
@@ -276,9 +276,9 @@ Route group `(dashboard)` не влияет на URL: её `layout.tsx` обор
 
 - **shadcn/ui** — стиль `base-nova`, примитивы Base UI вместо Radix. Композиция идёт через проп `render`, а не `asChild`: например, `<SidebarMenuButton render={<Link … />} />`. Компоненты ставятся в `shared/ui`, их хуки — в `shared/hooks` (алиасы в `components.json`).
 - **Tailwind CSS 4** подключён через `@tailwindcss/postcss`; конфигурация темы — в `app/globals.css`, отдельного `tailwind.config` нет.
-- **Тема только тёмная.** Палитра проекта задана в `:root`: `--surface-0…4`, `--brand`, `--success`, `--text-primary/secondary/dim`. Токены shadcn (`--background`, `--primary`, `--muted` и т.д.) сопоставлены с палитрой в блоке `.dark`, а в `@theme inline` превращены в Tailwind-цвета: `bg-background`, `text-muted-foreground`, `text-income` и т.п.
+- **Тема только светлая.** Палитра проекта задана в `:root`: `--canvas`, `--paper`, `--ink`, пастель `--mint` / `--periwinkle` / `--peach`, `--field`, `--line`, `--ink-muted`, `--success`, `--danger`. Токены shadcn (`--background`, `--primary`, `--muted` и т.д.) заданы там же и сопоставлены с палитрой, а в `@theme inline` превращены в Tailwind-цвета: `bg-background`, `bg-canvas`, `bg-mint`, `text-muted-foreground`, `text-income` и т.п. Шрифт — Onest (кириллица). Радиусы по иерархии: 24px — карточки и диалоги, 32px — панель контента, `rounded-full` — кнопки и поля.
 - **Форматирование** (`shared/lib/format.ts`): `formatMoney` форматирует рубли в локали `ru-RU`, `formatDate` — дату в UTC, `dateInputToIso` превращает `YYYY-MM-DD` в ISO-строку на полночь UTC.
-- **Значок категории** — первая буква названия на фоне цвета категории. Контрастный цвет текста подбирает `getReadableTextColor()` (`shared/lib/color.ts`) с учётом прозрачности `#RRGGBBAA`. Поле `icon` категории хранится, но в UI пока не используется.
+- **Строка транзакции** — круглая пастельная иконка направления (мятная со стрелкой `ArrowDownLeft` для дохода, персиковая со стрелкой `ArrowUpRight` для расхода); цвет категории показывается точкой перед названием, а не заливкой (пользовательский HEX на светлом фоне не годится для фона). Поле `icon` категории хранится, но в UI пока не используется.
 
 ---
 
@@ -390,6 +390,6 @@ sequenceDiagram
 | Даты транзакций — полночь UTC, сводка по UTC | Одинаковый результат в любом часовом поясе | Frontend обязан форматировать даты транзакций с `timeZone: 'UTC'` |
 | Категорию с транзакциями удалить нельзя | Нет «висячих» транзакций | 409 от сервиса + внешний ключ `ON DELETE NO ACTION` как страховка на уровне БД |
 | Данные грузятся только на клиенте | Сервер Next.js не участвует в аутентификации: токен живёт только в браузере (`localStorage`) | SSR с данными невозможен без переноса токена в cookie |
-| Одна тёмная тема | Упрощение дизайн-системы | Цветовые токены shadcn заданы в `.dark`, класс `dark` зафиксирован на `<html>` |
+| Одна светлая тема | Упрощение дизайн-системы | Цветовые токены shadcn заданы в `:root`, `dark:`-варианты в компонентах не работают |
 
 Список известных проблем и недоделок — в [гайде разработчика](developer-guide.md#11-известные-проблемы-и-ограничения).
