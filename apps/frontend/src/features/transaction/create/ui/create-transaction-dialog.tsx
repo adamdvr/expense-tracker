@@ -32,11 +32,11 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>
+      <DialogTrigger render={<Button />}>
         <Plus data-icon="inline-start" />
         Добавить
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Новая транзакция</DialogTitle>
           <DialogDescription>Запишите доход или расход</DialogDescription>
@@ -45,7 +45,7 @@ export function CreateTransactionDialog({ onCreated }: CreateTransactionDialogPr
         <CreateTransactionForm
           onSuccess={handleSuccess}
           onCancel={() => setOpen(false)}
-          renderFooter={(actions) => <DialogFooter className="mt-6">{actions}</DialogFooter>}
+          renderFooter={(actions) => <DialogFooter className="mt-5">{actions}</DialogFooter>}
         />
       </DialogContent>
     </Dialog>

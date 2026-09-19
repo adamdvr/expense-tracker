@@ -8,6 +8,7 @@ import { useCategories } from '@/entities/category'
 import type { Transaction, TransactionType } from '@/entities/transaction'
 import { getApiErrorMessage } from '@/shared/api'
 import { todayInputValue } from '@/shared/lib/format'
+import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field'
 import { Input } from '@/shared/ui/input'
@@ -34,7 +35,7 @@ interface CreateTransactionFormProps {
 }
 
 function defaultRenderFooter(actions: ReactNode) {
-  return <div className="mt-6 flex justify-end gap-2">{actions}</div>
+  return <div className="mt-5 flex justify-end gap-2">{actions}</div>
 }
 
 export function CreateTransactionForm({
@@ -97,17 +98,27 @@ export function CreateTransactionForm({
           render={({ field }) => (
             <Field>
               <FieldLabel>Тип</FieldLabel>
-              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Тип транзакции">
+              {/* Сегментированный переключатель: выбранный вариант — ink-пилюля, читается и без цвета. */}
+              <div
+                className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1"
+                role="group"
+                aria-label="Тип транзакции"
+              >
                 {TRANSACTION_TYPES.map((type) => (
-                  <Button
+                  <button
                     key={type.value}
                     type="button"
-                    variant={field.value === type.value ? 'default' : 'outline'}
                     aria-pressed={field.value === type.value}
                     onClick={() => field.onChange(type.value)}
+                    className={cn(
+                      'h-9 rounded-full text-sm font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                      field.value === type.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
                   >
                     {type.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </Field>
