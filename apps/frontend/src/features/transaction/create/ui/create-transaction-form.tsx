@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRef, useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -175,7 +176,8 @@ export function CreateTransactionForm({
               </Select>
               {hasNoCategories && (
                 <FieldDescription>
-                  Сначала создайте категорию — без неё транзакцию не сохранить.
+                  Сначала <Link href="/categories">создайте категорию</Link> — без неё транзакцию не
+                  сохранить.
                 </FieldDescription>
               )}
               {categories.isError && (

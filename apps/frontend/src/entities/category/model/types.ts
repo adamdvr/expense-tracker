@@ -10,3 +10,12 @@ export interface Category {
   createdAt: string
   updatedAt: string
 }
+
+/** Тело `POST /categories`. */
+export interface CreateCategoryPayload {
+  name: string
+  /** HEX-цвет с `#`: без него backend цвет примет, а CSS — нет. */
+  color: string
+  /** Имя иконки из `CATEGORY_ICONS`, напр. `shopping-cart`. */
+  icon: string
+}

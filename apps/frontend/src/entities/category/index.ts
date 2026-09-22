@@ -1,3 +1,6 @@
-export type { Category } from './model/types'
-export { categoryKeys, fetchCategories } from './api/category-api'
+export type { Category, CreateCategoryPayload } from './model/types'
+export { categoryKeys, fetchCategories, createCategory } from './api/category-api'
 export { useCategories } from './api/use-categories'
+export { CATEGORY_COLORS } from './config/colors'
+export { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from './config/icons'
+export { CategoryIcon } from './ui/category-icon'
