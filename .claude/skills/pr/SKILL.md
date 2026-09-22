@@ -4,7 +4,7 @@ description: Создать Pull Request на GitHub в master по правил
 argument-hint: '[--title "<заголовок>"] [--branch <type>/<scope>-<описание>]'
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Bash(git status:*), Bash(git branch --show-current), Bash(git fetch origin master), Bash(git log:*), Bash(git diff:*), Bash(git ls-remote --heads origin:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(npm run typecheck), Bash(npm run lint), Bash(npm run build)
+allowed-tools: Bash(.claude/skills/pr/scripts/validate.sh:*), Bash(git status:*), Bash(git branch --show-current), Bash(git fetch origin master), Bash(git log:*), Bash(git diff:*), Bash(git ls-remote --heads origin:*), Bash(gh pr list:*), Bash(gh pr view:*), Bash(npm run typecheck), Bash(npm run lint), Bash(npm run build)
 ---
 
 # Создание Pull Request
@@ -15,11 +15,18 @@ allowed-tools: Bash(git status:*), Bash(git branch --show-current), Bash(git fet
 
 ## 1. Аргументы и ветка
 
-`$ARGUMENTS` — `[--title "<заголовок>"] [--branch <ветка>]`, оба необязательны. Ветка не передана — текущая (`git branch --show-current`; пусто, то есть detached HEAD, — остановись).
+`$ARGUMENTS` — `[--title "<заголовок>"] [--branch <ветка>]`, оба необязательны.
 
-- Ветка должна соответствовать `^(feat|fix|refactor|perf|docs|style|test|build|ci|chore)/[a-z0-9]+(-[a-z0-9]+)+$` и не быть `master`.
+Проверь ветку скриптом (из корня репозитория; `--branch` не передан — вызывай без аргумента, скрипт возьмёт текущую):
+
+```bash
+.claude/skills/pr/scripts/validate.sh ['<ветка>']
+```
+
+Скрипт проверяет, что это не detached HEAD и не `master`, имя соответствует `<type>/<scope>-<описание>` и ветка есть локально. Код `0` — в stdout имя ветки, дальше работай с ним. Ненулевой код — покажи пользователю сообщение из stderr и остановись.
+
 - `git status` — есть незакоммиченные изменения или незавершённый merge/rebase — остановись и предложи `/commit`.
-- Ветка не текущая — `git switch --no-guess '<ветка>'` (не создаёт ветку из remote; нет локально — остановись).
+- Ветка не текущая — `git switch --no-guess '<ветка>'`.
 - `gh pr list --head '<ветка>' --base master --state open --json url` — непустой результат: PR уже есть, покажи ссылку и остановись. `[]` — продолжай.
 
 ## 2. Актуализация относительно master
@@ -67,19 +74,7 @@ git diff origin/master...HEAD
 
 Большой diff читай по файлам. Несвязанные с задачей изменения — остановись: для них нужна отдельная ветка.
 
-```markdown
-## Summary
-- <1-3 пункта: что изменено>
-
-## Почему
-<контекст — только если не очевиден из Summary>
-
-## Test plan
-- [x] `npm run typecheck`, `npm run lint`, `npm run build` проходят
-- [ ] <как проверить само изменение>
-```
-
-`[x]` — только у того, что действительно проверено.
+Описание составь по шаблону [template.md](template.md): заполни все `<…>`, следуй подсказкам в `<!-- … -->` и удали их. `[x]` — только у того, что действительно проверено.
 
 ## 6. Push и PR
 
@@ -90,6 +85,8 @@ git push -u origin 'HEAD:refs/heads/<ветка>'
 ```
 
 Отклонён (non-fast-forward) — не форсируй, остановись.
+
+Перед отправкой перечитай тело: в нём не должно остаться заполнителей `<…>` и комментариев `<!-- … -->` из [template.md](template.md). Остались — дозаполни, не отправляй шаблон как есть.
 
 Заголовок и тело — только через quoted heredoc одним Bash-вызовом, чтобы ничего не раскрылось в shell:
 
