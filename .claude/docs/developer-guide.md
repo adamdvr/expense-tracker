@@ -47,7 +47,7 @@ npm run dev
 | Health-check API | http://localhost:3001 → `{"status":"ok",…}` |
 | Swagger UI | http://localhost:3001/api |
 
-**Первый вход.** Зарегистрируйтесь на `/register`. В UI пока нет управления категориями (`/categories` — заглушка), а без категории форма создания транзакции не сохраняется. Первые категории создайте через Swagger: **Authorize** → вставить `access_token` → `POST /categories`. Токен можно взять из ответа `POST /auth/login` или из `localStorage` браузера — ключ `tracker:session`, поле `accessToken`.
+**Первый вход.** Зарегистрируйтесь на `/register` и создайте первую категорию в разделе «Категории» (`/categories`): без категории форма создания транзакции не сохраняется. Изменить или удалить категорию в UI пока нельзя — это делается через Swagger: **Authorize** → вставить `access_token` → `PATCH` / `DELETE /categories/:id`. Токен можно взять из ответа `POST /auth/login` или из `localStorage` браузера — ключ `tracker:session`, поле `accessToken`.
 
 ---
 
@@ -248,7 +248,7 @@ export { useBudgets } from './api/use-budgets'
 
 ### 6.5. Пользовательский сценарий: мутация и форма (feature)
 
-Образец — `apps/frontend/src/features/transaction/create/`.
+Образец — `apps/frontend/src/features/transaction/create/`; попроще — `features/category/create/` (одно текстовое поле и две группы radio).
 
 ```ts
 // features/budget/create/api/use-create-budget.ts
@@ -287,6 +287,7 @@ export function useCreateBudget() {
   | `border-border` | Границы |
 
 - Новый токен: цвет в палитру `:root` (`apps/frontend/src/app/globals.css`) → сопоставление токена shadcn (тоже в `:root`) → `--color-<имя>` в `@theme inline`, после чего появится класс `text-<имя>` / `bg-<имя>`. Тема только светлая, `dark:`-варианты не используются.
+- Исключение из правила токенов — цвет категории: это пользовательские данные, он задаётся inline-стилем (`style={{ backgroundColor: category.color }}`). Для категории используйте `CategoryIcon` из `@/entities/category`, для новых цветов палитры `CATEGORY_COLORS` — проверку контраста ≥ 3:1 (см. комментарий в `entities/category/config/colors.ts`).
 - Иконки — `lucide-react`. Объединение классов — `cn()` из `@/shared/lib/utils`.
 
 ---
@@ -365,7 +366,8 @@ Unit-тесты есть только в backend: Jest, файлы `*.spec.ts` �
 | `400 property X should not exist` | В body или query есть поле, которого нет в DTO (`forbidNonWhitelisted`) | Убрать поле или добавить его в DTO с валидатором |
 | `500` на `PATCH` | В обязательное поле передан `null` | Не передавать поле вообще (см. [API → ограничения](api.md#10-известные-ограничения)) |
 | Изменение `NEXT_PUBLIC_API_URL` не подхватилось | Переменная встроена в бандл при старте или сборке | Перезапустить `npm run dev` / пересобрать |
-| Форма транзакции: «Сначала создайте категорию» | У пользователя нет категорий, а в UI их пока нельзя создать | Создать через Swagger: `POST /categories` |
+| Форма транзакции: «Сначала создайте категорию» | У пользователя нет категорий | Создать категорию на `/categories` — ссылка есть прямо в подсказке |
+| У категории вместо своей иконки — ярлык (`tag`) | Имени из `icon` нет в реестре `CATEGORY_ICONS` (категория создана через API) | Выбрать иконку из реестра или добавить нужную в `entities/category/config/icons.ts` |
 | Дата транзакции отображается на день раньше | Дата отформатирована в локальном часовом поясе | Использовать `formatDate()` из `shared/lib/format.ts` (UTC) |
 
 ---
@@ -380,10 +382,11 @@ Unit-тесты есть только в backend: Jest, файлы `*.spec.ts` �
 - **`README.md` устарел**: упоминает несуществующий скрипт `npm run install:all`, «CSS без внешних библиотек» и модели `Expense` и `Category` как будущие. Ориентируйтесь на `CLAUDE.md` и эту документацию.
 
 **Frontend**
-- Разделы `/transactions` и `/categories` — заглушки. Категории создаются только через API.
+- Раздел `/transactions` — заглушка.
+- Категории в UI можно только создавать: изменить или удалить категорию можно только через API.
 - Нет кнопки выхода: сессия сбрасывается только при 401.
 - `/login` и `/register` не перенаправляют уже вошедшего пользователя.
-- Поле `icon` категории не используется в UI.
+- Иконка категории видна только на `/categories`: в строке транзакции и в `Select` формы транзакции категория отмечена точкой цвета.
 - Правила FSD не проверяются линтером.
 
 **Backend и API** (подробнее — в [API → ограничения](api.md#10-известные-ограничения))

@@ -190,8 +190,8 @@ Frontend организован по адаптации [Feature-Sliced Design](
 ```mermaid
 flowchart TD
     app["app<br/>маршруты, layout, providers, globals.css"] --> widgets
-    widgets["widgets<br/>auth-layout · app-shell · transactions-list · section-placeholder"] --> features
-    features["features<br/>auth/login · auth/register · transaction/create"] --> entities
+    widgets["widgets<br/>auth-layout · app-shell · transactions-list · categories-list · section-placeholder"] --> features
+    features["features<br/>auth/login · auth/register · transaction/create · category/create"] --> entities
     entities["entities<br/>session · user · category · transaction"] --> shared
     shared["shared<br/>api · config · lib · hooks · ui"]
 ```
@@ -199,9 +199,9 @@ flowchart TD
 | Слой | Слайсы | Что внутри |
 |---|---|---|
 | `app/` | — | Маршруты (`page.tsx`, `layout.tsx`), `providers.tsx`, `globals.css` |
-| `widgets/` | `auth-layout`, `app-shell`, `transactions-list`, `section-placeholder` | Композитные блоки UI: обёртка страниц входа, каркас авторизованной части, список транзакций, заглушка нереализованного раздела |
-| `features/` | `auth/login`, `auth/register`, `transaction/create` | Пользовательские сценарии: формы и мутации |
-| `entities/` | `session`, `user`, `category`, `transaction` | Бизнес-сущности: типы, запросы к API и query-хуки, хранение сессии, UI-строка транзакции |
+| `widgets/` | `auth-layout`, `app-shell`, `transactions-list`, `categories-list`, `section-placeholder` | Композитные блоки UI: обёртка страниц входа, каркас авторизованной части, список транзакций, список категорий, заглушка нереализованного раздела |
+| `features/` | `auth/login`, `auth/register`, `transaction/create`, `category/create` | Пользовательские сценарии: формы и мутации |
+| `entities/` | `session`, `user`, `category`, `transaction` | Бизнес-сущности: типы, запросы к API и query-хуки, хранение сессии, UI-строка транзакции, значок категории с палитрой и реестром иконок |
 | `shared/` | `api`, `config`, `lib`, `hooks`, `ui` | HTTP-клиент, конфиг, утилиты (форматирование, цвета, `cn`), хуки и компоненты shadcn |
 
 Правила:
@@ -215,7 +215,7 @@ flowchart TD
 |---|---|---|---|
 | `/` | `app/(dashboard)/page.tsx` | авторизованный | `TransactionsList` — последние транзакции с пагинацией и созданием |
 | `/transactions` | `app/(dashboard)/transactions/page.tsx` | авторизованный | Заглушка «Раздел в разработке» |
-| `/categories` | `app/(dashboard)/categories/page.tsx` | авторизованный | Заглушка «Раздел в разработке» |
+| `/categories` | `app/(dashboard)/categories/page.tsx` | авторизованный | `CategoriesList` — категории пользователя и создание новой |
 | `/login` | `app/login/page.tsx` | публичный | `AuthLayout` + `LoginForm` |
 | `/register` | `app/register/page.tsx` | публичный | `AuthLayout` + `RegisterForm` |
 | `/terms` | `app/terms/page.tsx` | публичный | Пользовательское соглашение (статичный текст) |
@@ -262,7 +262,7 @@ Route group `(dashboard)` не влияет на URL: её `layout.tsx` обор
 - **Запросы (чтение)** лежат в `entities/<сущность>/api`: функция запроса, фабрика ключей и query-хук.
   - `transactionKeys`: `all` → `lists()` → `list({ page, limit })`; хук `useTransactions(page, limit = TRANSACTIONS_PAGE_SIZE)` с `placeholderData: keepPreviousData`, чтобы при смене страницы не мигал скелетон.
   - `categoryKeys`: `all` → `list()`; хук `useCategories()`.
-- **Мутации (сценарии)** лежат в `features/<домен>/<сценарий>/api`. После успеха они инвалидируют кэш по **корневому** ключу сущности: `useCreateTransaction` вызывает `invalidateQueries({ queryKey: transactionKeys.all })`, потому что новая транзакция может сдвинуть любую страницу списка.
+- **Мутации (сценарии)** лежат в `features/<домен>/<сценарий>/api`. После успеха они инвалидируют кэш по **корневому** ключу сущности: `useCreateTransaction` вызывает `invalidateQueries({ queryKey: transactionKeys.all })`, потому что новая транзакция может сдвинуть любую страницу списка. `useCreateCategory` инвалидирует `categoryKeys.all` — так обновляются и список на `/categories`, и `Select` в форме транзакции.
 - Размер страницы `TRANSACTIONS_PAGE_SIZE = 10` (`entities/transaction/config/pagination.ts`) совпадает с `limit` по умолчанию на backend.
 
 ### 5.7. Формы
@@ -270,7 +270,7 @@ Route group `(dashboard)` не влияет на URL: её `layout.tsx` обор
 - react-hook-form + zod через `zodResolver`. Готового shadcn-компонента `Form` нет: поля собираются из примитивов `Field`, `FieldGroup`, `FieldLabel`, `FieldError` (`shared/ui/field.tsx`).
 - Схема лежит в `model/schema.ts` фичи. Значения формы хранятся в том виде, в каком их вводит пользователь (например, `amount` — строка, допускается запятая), а в payload API их переводит функция `to…Payload()`.
 - Серверная ошибка показывается как `rootError` через `getApiErrorMessage()`.
-- Правила zod-схем вручную повторяют правила DTO на backend. Например, пароль не короче 6 символов, сумма не больше `9 999 999 999.99`, описание не длиннее 255 символов. При изменении DTO схему нужно обновить.
+- Правила zod-схем вручную повторяют правила DTO на backend. Например, пароль не короче 6 символов, сумма не больше `9 999 999 999.99`, описание не длиннее 255 символов, название категории — от 1 до 50 символов после обрезки пробелов. При изменении DTO схему нужно обновить.
 
 ### 5.8. UI и стили
 
@@ -278,7 +278,8 @@ Route group `(dashboard)` не влияет на URL: её `layout.tsx` обор
 - **Tailwind CSS 4** подключён через `@tailwindcss/postcss`; конфигурация темы — в `app/globals.css`, отдельного `tailwind.config` нет.
 - **Тема только светлая.** Палитра проекта задана в `:root`: `--canvas`, `--paper`, `--ink`, пастель `--mint` / `--periwinkle` / `--peach`, `--field`, `--line`, `--ink-muted`, `--success`, `--danger`. Токены shadcn (`--background`, `--primary`, `--muted` и т.д.) заданы там же и сопоставлены с палитрой, а в `@theme inline` превращены в Tailwind-цвета: `bg-background`, `bg-canvas`, `bg-mint`, `text-muted-foreground`, `text-income` и т.п. Шрифт — Onest (кириллица). Радиусы по иерархии: 24px — карточки и диалоги, 32px — панель контента, `rounded-full` — кнопки и поля.
 - **Форматирование** (`shared/lib/format.ts`): `formatMoney` форматирует рубли в локали `ru-RU`, `formatDate` — дату в UTC, `dateInputToIso` превращает `YYYY-MM-DD` в ISO-строку на полночь UTC.
-- **Строка транзакции** — круглая пастельная иконка направления (мятная со стрелкой `ArrowDownLeft` для дохода, персиковая со стрелкой `ArrowUpRight` для расхода); цвет категории показывается точкой перед названием, а не заливкой (пользовательский HEX на светлом фоне не годится для фона). Поле `icon` категории хранится, но в UI пока не используется.
+- **Строка транзакции** — круглая пастельная иконка направления (мятная со стрелкой `ArrowDownLeft` для дохода, персиковая со стрелкой `ArrowUpRight` для расхода); цвет категории показывается точкой перед названием, а не заливкой (пользовательский HEX на светлом фоне не годится для фона). Иконка категории здесь не выводится.
+- **Значок категории** (`CategoryIcon`, `entities/category`) — иконка цвета категории на подложке из того же цвета, разбавленного до 16% (`color-mix`); выводится на `/categories`. Backend хранит в `icon` имя lucide-иконки (`shopping-cart`), компонент берётся из статического реестра `CATEGORY_ICONS` (`entities/category/config/icons.ts`), имя не из реестра рисуется иконкой `tag`. Цвет новой категории выбирается только из палитры `CATEGORY_COLORS` (8 цветов): контраст каждого ≥ 3:1 и для кружка на светлом фоне, и для иконки на подложке.
 
 ---
 
@@ -322,7 +323,16 @@ sequenceDiagram
 3. `useCreateTransaction().mutate(payload)` → `POST /transactions`. Повторную отправку до завершения запроса блокирует синхронный `ref`-флаг.
 4. После успеха инвалидируется `transactionKeys.all`, диалог закрывается, список переходит на первую страницу.
 
-### 6.4. Истёкший токен
+Если категорий у пользователя ещё нет, `Select` заблокирован, а подсказка под ним ведёт ссылкой на `/categories`.
+
+### 6.4. Создание категории
+
+1. `/categories` рендерит виджет `CategoriesList` (`useCategories()`), в его шапке — `CreateCategoryDialog` → `CreateCategoryForm`.
+2. Значения по умолчанию: иконка `tag`, цвет — первый цвет палитры, которого ещё нет у категорий пользователя (`pickFreeCategoryColor`). Цвет и иконка выбираются нативными radio-группами; выбранная иконка рисуется в выбранном цвете.
+3. zod-валидация (название обрезается, от 1 до 50 символов), затем `toCreateCategoryPayload()` → `useCreateCategory().mutate(payload)` → `POST /categories`. Повторную отправку до завершения запроса блокирует синхронный `ref`-флаг.
+4. После успеха инвалидируется `categoryKeys.all`, диалог закрывается. Backend сортирует категории по `createdAt`, поэтому новая появляется в конце списка; она же сразу доступна в `Select` формы транзакции.
+
+### 6.5. Истёкший токен
 
 ```mermaid
 sequenceDiagram

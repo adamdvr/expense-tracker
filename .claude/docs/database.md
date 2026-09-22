@@ -100,8 +100,8 @@ erDiagram
 |---|---|---|---|---|---|
 | `id` | `TEXT` | нет | — (cuid из Prisma) | PK `categories_pkey` | Идентификатор категории |
 | `name` | `TEXT` | нет | — | — | Название. Длина 1–50 проверяется только в DTO; в БД ограничения длины нет. **Не уникально**, в том числе в рамках одного пользователя |
-| `color` | `TEXT` | нет | — | — | HEX-цвет (`#RRGGBB`, допустимы `#RGB` и варианты с альфа-каналом — проверяет `@IsHexColor` в DTO). Frontend закрашивает им значок категории в списке транзакций |
-| `icon` | `TEXT` | нет | — | — | Имя иконки (например, `shopping-cart`), 1–50 символов по DTO. Хранится и возвращается API, но **в UI пока не используется**: значок категории — первая буква названия |
+| `color` | `TEXT` | нет | — | — | HEX-цвет (`#RRGGBB`, допустимы `#RGB` и варианты с альфа-каналом — проверяет `@IsHexColor` в DTO). Frontend рисует им точку категории в списке транзакций и значок на странице категорий |
+| `icon` | `TEXT` | нет | — | — | Имя lucide-иконки в kebab-case (например, `shopping-cart`), 1–50 символов по DTO. Frontend рисует иконку по своему реестру (`entities/category/config/icons.ts`), имя не из реестра — иконкой `tag` |
 | `user_id` | `TEXT` | нет | — | FK `categories_user_id_fkey` → `users(id)` ON DELETE CASCADE ON UPDATE CASCADE; индекс `categories_user_id_idx` | Владелец категории |
 | `createdAt` | `TIMESTAMP(3)` | нет | `CURRENT_TIMESTAMP` | — | Дата создания. По ней сортируется `GET /categories` (по возрастанию) |
 | `updatedAt` | `TIMESTAMP(3)` | нет | — (Prisma) | — | Дата последнего изменения, обновляется при `PATCH /categories/:id` |

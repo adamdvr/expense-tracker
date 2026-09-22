@@ -202,8 +202,8 @@ curl -X POST http://localhost:3001/auth/register \
 |---|---|---|
 | `id` | string (cuid) | Идентификатор |
 | `name` | string | Название, 1–50 символов, не уникально |
-| `color` | string | HEX-цвет для UI |
-| `icon` | string | Имя иконки, 1–50 символов, например `shopping-cart`. Произвольная строка: backend не проверяет, что такая иконка существует |
+| `color` | string | HEX-цвет для UI. Frontend при создании предлагает только палитру из 8 цветов (`CATEGORY_COLORS`) |
+| `icon` | string | Имя иконки, 1–50 символов, например `shopping-cart`. Произвольная строка: backend не проверяет, что такая иконка существует. Frontend рисует иконку по реестру `CATEGORY_ICONS` (имена lucide в kebab-case), имя не из реестра — иконкой `tag` |
 | `userId` | string | Владелец |
 | `createdAt` | string (ISO) | Дата создания |
 | `updatedAt` | string (ISO) | Дата последнего изменения |
@@ -548,6 +548,7 @@ interface TransactionSummary {
 | `categories/entities/category.entity.ts` → `CategoryEntity` | `entities/category/model/types.ts` → `Category` |
 | `transactions/entities/transaction.entity.ts`, `paginated-transactions.entity.ts` | `entities/transaction/model/types.ts` → `Transaction`, `PaginatedTransactions` |
 | `transactions/dto/create-transaction.dto.ts` → `CreateTransactionDto` | `entities/transaction/model/types.ts` → `CreateTransactionPayload`; правила — `features/transaction/create/model/schema.ts` |
+| `categories/dto/create-category.dto.ts` → `CreateCategoryDto` | `entities/category/model/types.ts` → `CreateCategoryPayload`; правила — `features/category/create/model/schema.ts` |
 | `auth/dto/register.dto.ts`, `auth/dto/login.dto.ts` | `features/auth/register/model/schema.ts`, `features/auth/login/model/schema.ts` |
 
-Сейчас frontend использует `POST /auth/register`, `POST /auth/login`, `GET /categories`, `GET /transactions` и `POST /transactions`. Сводка, CRUD категорий, получение, изменение и удаление отдельной транзакции в UI пока не задействованы. В `apiClient` есть только методы `get` и `post`.
+Сейчас frontend использует `POST /auth/register`, `POST /auth/login`, `GET /categories`, `POST /categories`, `GET /transactions` и `POST /transactions`. Сводка, изменение и удаление категорий, получение, изменение и удаление отдельной транзакции в UI пока не задействованы. В `apiClient` есть только методы `get` и `post`.
