@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 
-import { SectionPlaceholder } from '@/widgets/section-placeholder'
+import { CategoriesList } from '@/widgets/categories-list'
 
 export const metadata: Metadata = {
   title: 'Категории — Трекер расходов',
 }
 
 export default function CategoriesPage() {
-  return <SectionPlaceholder description="Здесь появится управление категориями доходов и расходов." />
+  return (
+    <div className="w-full max-w-3xl">
+      <CategoriesList />
+    </div>
+  )
 }
