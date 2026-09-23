@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Общее
 - **TypeScript**: Строгий режим во всех проектах
 - **Базовый tsconfig**: Корневой `tsconfig.json` расширяется в каждом приложении
-- **Форматирование**: Prettier с конфигурацией без semicolons, single quotes
+- **Форматирование**: Prettier с конфигурацией с semicolons, single quotes
 
 ## Основные команды
 

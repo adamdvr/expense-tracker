@@ -38,7 +38,7 @@
           {
             "type": "command",
             "if": "Edit(*ts) | Write(*ts)",
-            "command": "npm run lint -- --fix"
+            "command": "npm run lint -- -- --fix"
           }
         ]
       }
