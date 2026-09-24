@@ -1,0 +1,14 @@
+# Контекст сборки — корень монорепозитория (см. docker-compose.yml).
+# Зависимости ставятся внутри образа, хостовые node_modules (macOS) в него не попадают.
+**/node_modules
+**/.next
+**/dist
+**/*.tsbuildinfo
+.turbo
+.git
+.claude
+
+# Секреты и локальные env-файлы; .env.example остаётся
+**/.env
+**/.env.*
+!**/.env.example

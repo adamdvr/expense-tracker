@@ -19,41 +19,80 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  dbhub:
+    image: bytebase/dbhub:latest
+    ports:
+      - "8080:8080"
+    command:
+      - --transport
+      - http
+      - --port
+      - "8080"
+      - --dsn
+      - "postgres://tracker:tracker@postgres:5432/tracker?sslmode=disable"
+    depends_on:
+      - postgres
   backend:
     build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
     container_name: tracker-backend
+    # Секреты (JWT_SECRET и др.) — из apps/backend/.env, если он есть (в образ он не попадает)
+    env_file:
+      - path: apps/backend/.env
+        required: false
     environment:
       DATABASE_URL: postgresql://tracker:tracker@postgres:5432/tracker
       PORT: 3001
       NODE_ENV: development
+      FRONTEND_URL: http://localhost:${FRONTEND_PORT:-3000}
+    # Порт на хосте настраивается: BACKEND_PORT=3002 docker compose up --watch
     ports:
-      - "3001:3001"
-    volumes:
-      - ./apps/backend:/app
-      - /app/node_modules
+      - "${BACKEND_PORT:-3001}:3001"
     depends_on:
       postgres:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && npm run dev"
+    # Запуск: docker compose up --watch
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/backend/src
+          target: /app/apps/backend/src
+        - action: rebuild
+          path: ./apps/backend/prisma
+        - action: rebuild
+          path: ./apps/backend/package.json
+        - action: rebuild
+          path: ./package-lock.json
 
   frontend:
     build:
-      context: ./apps/frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/frontend/Dockerfile
     container_name: tracker-frontend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-3001}
+    # Порт на хосте настраивается: FRONTEND_PORT=3010 docker compose up --watch
     ports:
-      - "3000:3000"
-    volumes:
-      - ./apps/frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
+    # Запуск: docker compose up --watch
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/frontend/src
+          target: /app/apps/frontend/src
+        - action: sync
+          path: ./apps/frontend/public
+          target: /app/apps/frontend/public
+        - action: rebuild
+          path: ./apps/frontend/package.json
+        - action: rebuild
+          path: ./apps/frontend/next.config.ts
+        - action: rebuild
+          path: ./package-lock.json
 
 volumes:
   postgres_data:

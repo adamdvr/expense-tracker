@@ -42,7 +42,8 @@ expense-tracker/
 │   └── frontend/          # @tracker/frontend — Next.js
 ├── .claude/               # docs/ (эта документация), plans/ (планы фич), шаблоны промптов Claude Code
 ├── .github/workflows/     # CI: автоматическое код-ревью Claude
-├── docker-compose.yml     # PostgreSQL (+ описания контейнеров backend/frontend)
+├── docker-compose.yml     # PostgreSQL, dbhub, backend и frontend (контекст сборки — корень)
+├── .dockerignore          # исключает node_modules, .next, dist и .env из контекста сборки
 ├── turbo.json             # пайплайн задач Turborepo
 ├── tsconfig.json          # базовый TS-конфиг, расширяется приложениями
 ├── package.json           # npm workspaces + скрипты-обёртки над turbo
@@ -359,7 +360,7 @@ sequenceDiagram
 ### 7.1. Окружения и запуск
 
 - **Локальная разработка.** PostgreSQL запускается в Docker (`docker-compose up postgres -d`: контейнер `tracker-db`, том `tracker_postgres_data`, healthcheck `pg_isready`). Приложения запускаются на хосте командой `npm run dev` через Turborepo. Порты: frontend 3000, backend 3001, PostgreSQL 5432.
-- **Полный стек в Docker** (`docker-compose up`) описан, но в текущем виде **не собирается**: `Dockerfile` приложений выполняет `npm ci` в каталоге приложения, а lockfile есть только в корне монорепозитория. Подробнее — в [гайде разработчика](developer-guide.md#11-известные-проблемы-и-ограничения).
+- **Полный стек в Docker**: `docker compose up --watch`. Контекст сборки backend и frontend — корень монорепозитория, потому что lockfile npm workspaces лежит только там. `Dockerfile` ставит зависимости слоем `npm ci -w apps/<имя>`, работает от пользователя `node`, запускает `npm run dev`. Правки в `src` (и `public` у frontend) синхронизирует Compose Watch (`develop.watch`), изменения `package.json`, `package-lock.json`, `prisma/` и `next.config.ts` пересобирают образ. Секреты backend читаются из необязательного `apps/backend/.env` (`env_file`). Backend-образу нужен пакет `openssl`: Prisma 5 на Alpine 3.21+ без него не находит libssl.
 - Имя compose-проекта зафиксировано как `name: tracker`. Иначе Compose взял бы его из имени папки, и после переименования папки создал бы новый пустой том БД.
 
 ### 7.2. Переменные окружения
