@@ -378,6 +378,7 @@ Unit-тесты есть только в backend: Jest, файлы `*.spec.ts` �
 
 **Инфраструктура**
 - **Порты в Docker-режиме.** По умолчанию frontend на 3000, backend на 3001. Если порт занят (например, на хосте идёт `npm run dev`), задайте другой: `FRONTEND_PORT=3010 BACKEND_PORT=3002 docker compose up --watch`. Переменные подставляются также в `NEXT_PUBLIC_API_URL` и `FRONTEND_URL` (CORS).
+- **Регистр пути на macOS и Compose Watch.** Compose строит пути `develop.watch` от переменной `PWD`, а файловый watcher отдаёт путь с настоящим регистром на диске. Если `PWD` отличается регистром (`~/desktop/...` вместо `~/Desktop/...`), `docker compose up --watch` пишет `Syncing service …`, но файлы в контейнер не копирует и ошибок не выдаёт. Запускайте из каталога с точным регистром (проверка: `echo $PWD`) или передайте его явно: `docker compose --project-directory "$(pwd -P)" up --watch`.
 - **`NEXT_PUBLIC_API_URL` во frontend** в контейнере задаётся через `environment` в `docker-compose.yml` (`http://localhost:${BACKEND_PORT:-3001}`).
 - **Автотестов почти нет**: в backend покрыт только `TransactionsService`, во frontend тестового раннера нет. В CI не запускаются ни тесты, ни `typecheck`, `lint` и `build` — только ИИ-ревью.
 - **`README.md` устарел**: упоминает несуществующий скрипт `npm run install:all`, «CSS без внешних библиотек» и модели `Expense` и `Category` как будущие. Ориентируйтесь на `CLAUDE.md` и эту документацию.
