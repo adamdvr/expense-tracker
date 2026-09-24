@@ -10,6 +10,7 @@
 - **Загрузка данных**: TanStack Query (`@tanstack/react-query`); формы — react-hook-form + zod
 - **Стилизация**: CSS-переменные темы shadcn, смэппленные на палитру проекта в `globals.css`. Тема одна — светлая, без переключателя (токены заданы в `:root`, класс `dark` не выставляется). Шрифт — Onest (`next/font/google`, кириллица), переменная `--font-onest`
 - **Порт**: 3000 (по умолчанию)
+- **Папки сборки**: `next dev` пишет в `.next-dev`, `next build` и `next typegen` — в `.next` (`distDir` по `phase` в `next.config.ts`), поэтому `npm run build` не ломает работающий dev-сервер. Как в Next.js 16, где это поведение по умолчанию; после перехода на v16 эту настройку можно убрать. `next-env.d.ts` генерируется Next.js и ссылается на текущий `distDir`, поэтому он в `.gitignore` (так рекомендует документация Next.js); на чистом клоне его создаёт `npm run typecheck` через `next typegen`
 
 **Архитектурные детали:**
 - `src/app/` — роутинг Next.js (`page.tsx`/`layout.tsx`); одновременно выполняет роль FSD-слоя `app` (глобальные провайдеры, стили). Остальные FSD-слои — `src/widgets/`, `src/features/`, `src/entities/`, `src/shared/`

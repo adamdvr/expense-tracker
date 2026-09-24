@@ -43,7 +43,7 @@ expense-tracker/
 ├── .claude/               # docs/ (эта документация), plans/ (планы фич), шаблоны промптов Claude Code
 ├── .github/workflows/     # CI: автоматическое код-ревью Claude
 ├── docker-compose.yml     # PostgreSQL, dbhub, backend и frontend (контекст сборки — корень)
-├── .dockerignore          # исключает node_modules, .next, dist и .env из контекста сборки
+├── .dockerignore          # исключает node_modules, .next, .next-dev, dist и .env из контекста сборки
 ├── turbo.json             # пайплайн задач Turborepo
 ├── tsconfig.json          # базовый TS-конфиг, расширяется приложениями
 ├── package.json           # npm workspaces + скрипты-обёртки над turbo
