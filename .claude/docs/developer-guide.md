@@ -355,7 +355,7 @@ Unit-тесты есть только в backend: Jest, файлы `*.spec.ts` �
 
 | Симптом | Причина | Решение |
 |---|---|---|
-| `tsc` во frontend падает на файлах `.next/types/…` (`Cannot find module '…/page.js'`) после удаления или переноса страницы | Устаревшие сгенерированные типы Next.js | `rm -rf apps/frontend/.next`, затем повторить команду |
+| `tsc` во frontend падает на файлах `.next/types/…` или `.next-dev/types/…` (`Cannot find module '…/page.js'`) после удаления или переноса страницы | Устаревшие сгенерированные типы Next.js | `rm -rf apps/frontend/.next apps/frontend/.next-dev`, затем повторить команду |
 | Backend не компилируется: в `@prisma/client` нет моделей, например `has no exported member 'User'` | Prisma Client не сгенерирован (после `npm install` из корня он не генерируется) | `cd apps/backend && npx prisma generate` |
 | `Can't reach database server at localhost:5432` | PostgreSQL не запущен | `docker-compose up postgres -d`; проверить `docker ps` (контейнер `tracker-db`) |
 | Backend падает на старте с `JwtStrategy requires a secret or key` | Нет `JWT_SECRET` | Создать `apps/backend/.env` из `.env.example` |

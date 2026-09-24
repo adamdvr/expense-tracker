@@ -12,6 +12,9 @@ coverage/
 build/
 dist/
 .next/
+.next-dev/
+# Генерируется next dev/build/typegen, ссылается на текущий distDir (см. apps/frontend/CLAUDE.md)
+next-env.d.ts
 out/
 
 # Env файлы
